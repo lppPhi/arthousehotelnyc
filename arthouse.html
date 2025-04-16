@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARTHOUSE NYC ::: BAR ::: DECONSTRUCTED</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;700;900&family=Playfair+Display:wght@800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Palette: High Contrast & Neon */
+            --bg-main: #000000;
+            --text-main: #ffffff;
+            --accent-neon: #FF33FF; /* Neon Pink/Magenta */
+            --gray-muted: #555555;
+            --gray-light: #cccccc;
+            --gray-dark: #222222; /* Darker gray for subtle backgrounds */
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', sans-serif; background-color: var(--bg-main);
+            color: var(--text-main); overflow-x: hidden;
+            font-weight: 300; line-height: 1.6;
+        }
+        body.menu-open { overflow: hidden; }
+
+        /* --- Typography --- */
+        h1, h2, h3, .font-display-1 {
+            font-family: 'Anton', sans-serif; text-transform: uppercase;
+            line-height: 0.9; color: var(--text-main);
+            margin-bottom: 1rem; letter-spacing: 0.01em;
+        }
+        .font-display-2 {
+             font-family: 'Playfair Display', serif; font-weight: 800;
+             line-height: 1.1; color: var(--text-main);
+        }
+        a { color: inherit; text-decoration: none; }
+        a:hover { color: var(--accent-neon); }
+
+        /* --- Header (Minimal Trigger) --- */
+        #main-header { position: fixed; top: 20px; left: 20px; z-index: 1001; }
+        #menu-trigger { display: block; cursor: pointer; padding: 5px; transition: transform 0.3s ease; }
+        #menu-trigger img { display: block; height: 2.5rem; filter: brightness(0) invert(1); transition: opacity 0.3s ease; }
+        #menu-trigger:hover img { opacity: 0.8; }
+        #menu-trigger:active { transform: scale(0.95); }
+
+        /* --- Fullscreen Menu Overlay --- */
+        #menu-overlay { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.98); color: var(--text-main); z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.4s ease-in-out, visibility 0s linear 0.4s; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; }
+        #menu-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.4s ease-in-out, visibility 0s linear 0s; }
+        #menu-overlay nav { display: flex; flex-direction: column; gap: 1.5rem; }
+        #menu-overlay nav a { font-family: 'Anton', sans-serif; font-size: clamp(2rem, 6vw, 4rem); text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-main); text-decoration: none; position: relative; transition: color 0.3s ease, transform 0.3s ease; padding: 0.5rem 0; }
+        #menu-overlay nav a:hover { color: var(--accent-neon); transform: scale(1.05); }
+        #menu-overlay .menu-book-now a { margin-top: 2rem; font-size: clamp(1.5rem, 4vw, 2.5rem); color: var(--bg-main); background-color: var(--accent-neon); padding: 1rem 2.5rem; transition: background-color 0.3s ease, color 0.3s ease; }
+        #menu-overlay .menu-book-now a:hover { background-color: var(--text-main); color: var(--bg-main); transform: scale(1.03); }
+        #close-menu { position: absolute; top: 30px; right: 30px; background: none; border: none; cursor: pointer; padding: 10px; }
+        #close-menu svg { width: 30px; height: 30px; stroke: var(--text-main); transition: stroke 0.3s ease, transform 0.3s ease; }
+        #close-menu:hover svg { stroke: var(--accent-neon); transform: rotate(90deg); }
+
+        /* --- Scroll Animations --- */
+        .section-container { min-height: 80vh; position: relative; overflow: hidden; padding: 15vh 5vw; border-bottom: 1px dashed var(--gray-muted); scroll-margin-top: 50px; }
+        .section-container:last-of-type { border-bottom: none; }
+        .animate-on-scroll { opacity: 0; transition: opacity 1s ease-out, transform 1s ease-out; }
+        .animate-slide-up { transform: translateY(100px); }
+        .animate-slide-left { transform: translateX(100px); }
+        .animate-slide-right { transform: translateX(-100px); }
+        .animate-scale-down { transform: scale(1.2); }
+        .is-visible { opacity: 1; transform: translate(0, 0) scale(1); }
+
+        /* --- Minimalist Button Style --- */
+        .btn-minimal { display: inline-block; padding: 0.75rem 1.5rem; border: 1px solid var(--accent-neon); color: var(--accent-neon); font-family: 'Inter', sans-serif; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; transition: background-color 0.3s ease, color 0.3s ease; text-align: center; }
+        .btn-minimal:hover { background-color: var(--accent-neon); color: var(--bg-main); }
+        .btn-book { font-family: 'Anton', sans-serif; font-size: 1.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--bg-main); background-color: var(--accent-neon); padding: 1rem 3rem; transition: background-color 0.3s ease, color 0.3s ease, letter-spacing 0.3s ease; border: none; display: inline-block; text-align: center; cursor: pointer; }
+        .btn-book:hover { background-color: var(--text-main); color: var(--bg-main); letter-spacing: 0.15em; }
+
+        /* --- CONTENT STYLING --- */
+
+        /* Cookie Banner */
+        #cookie-banner { position: fixed; bottom: 0; left: 0; width: 100%; background-color: var(--bg-main); color: var(--gray-light); padding: 1rem 2rem; z-index: 2000; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; border-top: 1px solid var(--gray-muted); opacity: 1; transition: opacity 0.5s ease; }
+        #cookie-banner.hidden { opacity: 0; pointer-events: none; }
+        #cookie-banner p { margin: 0; } #cookie-banner a { color: var(--accent-neon); text-decoration: underline; }
+        #cookie-banner button { background: var(--accent-neon); color: var(--bg-main); border: none; padding: 0.5rem 1rem; font-size: 0.8rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; }
+
+        /* Skip Link */
+        .skip-link { position: absolute; top: -40px; left: 0; background: var(--accent-neon); color: var(--bg-main); padding: 8px; z-index: 3000; transition: top 0.3s ease-in-out; }
+        .skip-link:focus { top: 0; }
+
+        /* --- Hero Section (for Bar Page) --- */
+        #hero-bar { padding: 0; border-bottom: none; display: flex; align-items: flex-end; justify-content: flex-start; text-align: left; min-height: 90vh; position: relative; overflow: hidden; }
+        #hero-bar .hero-background-image { position: absolute; inset: 0; z-index: 0; }
+        #hero-bar .hero-background-image img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.7) contrast(110%) saturate(110%); opacity: 0.9; }
+        #hero-bar::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 50%; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); z-index: 1; pointer-events: none; }
+        #hero-bar .hero-content-main { position: relative; z-index: 2; max-width: 60%; padding: 10vh 5vw; }
+        #hero-bar .hero-heading { font-size: clamp(4rem, 12vw, 9rem); margin-bottom: 0.5rem; line-height: 0.85; color: var(--text-main); text-shadow: 2px 2px 10px rgba(0,0,0,0.5); }
+        #hero-bar .hero-subheading { font-size: clamp(1rem, 2.5vw, 1.5rem); font-family: 'Inter', sans-serif; font-weight: 400; color: var(--gray-light); letter-spacing: 0.03em; margin-bottom: 2rem; max-width: 500px; text-shadow: 1px 1px 5px rgba(0,0,0,0.4); }
+
+        /* --- Bar Intro Text Section --- */
+        #bar-intro-text { padding: 10vh 5vw; }
+        #bar-intro-text .intro-grid { display: grid; grid-template-columns: 1fr; gap: 3rem; max-width: 1100px; margin: 0 auto; }
+        @media (min-width: 768px) { #bar-intro-text .intro-grid { grid-template-columns: 1fr 1.5fr; gap: 5rem; align-items: center; } }
+        #bar-intro-text h2 { font-size: clamp(1.8rem, 4vw, 3rem); color: var(--accent-neon); line-height: 1.1; font-weight: 400; font-family: 'Inter', sans-serif; text-transform: none; letter-spacing: 0; }
+        #bar-intro-text p { color: var(--gray-light); font-size: 1rem; }
+        #bar-intro-text .live-link { color: var(--accent-neon); font-weight: 700; text-decoration: underline; }
+
+        /* --- Bar Info Section --- */
+        #bar-info { background-color: var(--gray-dark); padding: 8vh 5vw; }
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 3rem 2rem; max-width: 1200px; margin: 0 auto; }
+        .info-block h3 { font-family: 'Anton', sans-serif; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--gray-muted); margin-bottom: 1rem; border-bottom: 1px solid var(--gray-muted); padding-bottom: 0.5rem; }
+        .info-block p, .info-block a, .info-block span { font-size: 0.95rem; color: var(--gray-light); line-height: 1.8; display: block; }
+        .info-block strong { color: var(--accent-neon); font-weight: 700; }
+        .info-block a { text-decoration: underline; }
+        .info-block a:hover { color: var(--accent-neon); }
+        .menu-link-wrapper { margin-top: 2rem; text-align: center; grid-column: 1 / -1; }
+
+        /* --- Bar Features Section --- */
+        #bar-features { padding: 10vh 5vw; }
+        #bar-features .features-heading { text-align: center; margin-bottom: 5rem; }
+        #bar-features .features-heading h2 { font-size: clamp(2.5rem, 6vw, 4.5rem); }
+        #bar-features .features-heading p { max-width: 600px; margin: 0.5rem auto 0; color: var(--gray-light); }
+        .feature-grid { display: grid; grid-template-columns: 1fr; gap: 5rem; max-width: 1000px; margin: 0 auto; }
+        @media (min-width: 768px) { .feature-grid { grid-template-columns: 1fr 1fr; align-items: center; gap: 4rem; } }
+        .feature-item { position: relative; }
+        .feature-item img { display: block; width: 100%; height: auto; max-height: 400px; object-fit: cover; border: 1px solid var(--gray-muted); filter: saturate(110%); }
+        .feature-item h3 { font-family: 'Inter', sans-serif; font-weight: 900; font-size: 1.6rem; text-transform: none; letter-spacing: -0.02em; color: var(--text-main); margin-top: 1.5rem; margin-bottom: 1rem; line-height: 1.2; }
+        .feature-item p { font-size: 0.95rem; color: var(--gray-light); margin-bottom: 1.5rem; }
+        .feature-item a { color: var(--accent-neon); font-weight: 700; text-decoration: underline; }
+        @media (min-width: 768px) { .feature-item:nth-child(odd) .feature-image { grid-column: 1; } .feature-item:nth-child(odd) .feature-text { grid-column: 2; } .feature-item:nth-child(even) .feature-image { grid-column: 2; grid-row: 1; } .feature-item:nth-child(even) .feature-text { grid-column: 1; grid-row: 1; } }
+
+        /* --- Booking Section (Using corrected Form Styles) --- */
+        #book { min-height: 90vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border-bottom: none; }
+        #book .book-heading { font-size: clamp(2.5rem, 6vw, 4.5rem); color: var(--text-main); margin-bottom: 1rem; }
+        #book p { color: var(--gray-light); max-width: 500px; margin: 0 auto 3rem auto; }
+        .booking-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1.5rem 1rem; width: 100%; max-width: 800px; margin-bottom: 3rem; }
+        .form-group { text-align: left; display: flex; flex-direction: column; justify-content: flex-end; }
+        .form-group label { display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gray-light); margin-bottom: 0.5rem; }
+        .form-group input, .form-group select { width: 100%; background: var(--gray-dark); border: 1px solid var(--gray-muted); color: var(--text-main); padding: 0.85rem 0.75rem; font-size: 0.95rem; font-family: 'Inter', sans-serif; line-height: 1.4; transition: border-color 0.3s ease, background-color 0.3s ease; border-radius: 2px; }
+        .form-group select { appearance: auto; background-image: none; padding-right: 2.5rem; }
+        .form-group input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.8); cursor: pointer; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--accent-neon); background-color: #111; }
+        #book .book-button-wrapper { margin-top: 1.5rem; grid-column: 1 / -1; text-align: center; }
+        #book .phone-link-wrapper { grid-column: 1 / -1; text-align: center; margin-top: 1rem; }
+
+
+        /* --- Footer --- */
+        .site-footer-minimal { text-align: center; padding: 3rem 1rem 2rem; font-size: 0.8rem; color: var(--gray-muted); letter-spacing: 0.05em; border-top: 1px solid #222; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
+        .footer-links ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem 2rem; }
+        .footer-links a { color: var(--gray-muted); } .footer-links a:hover { color: var(--accent-neon); }
+        .social-links-footer a { margin: 0 0.75rem; }
+        .social-links-footer svg { width: 18px; height: 18px; fill: var(--gray-muted); transition: fill 0.3s ease; }
+        .social-links-footer a:hover svg { fill: var(--accent-neon); }
+        .copyright { font-size: 0.75rem; }
+        .designed-by { font-size: 0.7rem; opacity: 0.6; }
+        .designed-by a { text-decoration: underline; }
+
+    </style>
+</head>
+<body>
+
+    <!-- Cookie Banner -->
+    <div id="cookie-banner">
+        <p>By using our website you are consenting to our use of cookies in accordance with our Cookie Policy. <a href="https://www.arthousehotelnyc.com/policies" target="_blank" rel="noopener noreferrer">Read More</a></p>
+        <button id="accept-cookies">Accept</button>
+    </div>
+
+    <!-- Skip Link -->
+    <a href="#site-content" class="skip-link">Skip to main content</a>
+
+    <!-- Minimal Header Trigger -->
+    <header id="main-header">
+        <a id="menu-trigger" title="Open Menu">
+            <img src="https://image-tc.galaxy.tf/wisvg-43nint0xjmzt82r0l2lzhzy67/arthouse-hotel-logo-white-transparent-background.svg?width=200" alt="Arthouse Hotel NYC Logo">
+        </a>
+    </header>
+
+    <!-- Fullscreen Menu Overlay -->
+    <div id="menu-overlay">
+        <button id="close-menu" aria-label="Close Menu">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+        <nav>
+             <!-- Links cập nhật cho trang Arthouse Bar -->
+             <a href="room.html" title="View Rooms">Rooms</a>
+             <a href="offers.html" title="View Offers">Offers</a>
+             <a href="arthouse.html" title="Arthouse Bar">Arthouse Bar</a>
+             <a href="live.html" title="Live @ AH">Live @ AH</a>
+             <a href="dining.html" title="View Dining">Dining</a>
+             <a href="event.html" target="_blank" rel="noopener noreferrer">Events</a>
+             <a href="https://www.arthousehotelnyc.com/explore" target="_blank" rel="noopener noreferrer">Neighborhood</a>
+             <a href="https://www.arthousehotelnyc.com/gallery" target="_blank" rel="noopener noreferrer">Gallery</a>
+             <a href="https://www.arthousehotelnyc.com/contact" target="_blank" rel="noopener noreferrer">Contact</a>
+            <div class="menu-book-now">
+                <a href="#book">Book Stay</a> <!-- Link đến form book ở cuối -->
+            </div>
+        </nav>
+    </div>
+
+    <main id="site-content">
+
+        <!-- Section 1: Hero for Bar Page -->
+        <section id="hero-bar" class="section-container">
+            <div class="hero-background-image">
+                 <img src="https://image-tc.galaxy.tf/wijpeg-qf6bajmn59xx8p1023phpwp/arthouse-hote-nyc-bar-chairs.jpg?width=1920" alt="View of the ArtHouse Hotel bar in NYC featuring high chairs" />
+            </div>
+            <div class="hero-content-main">
+                <h1 class="hero-heading animate-on-scroll animate-slide-right">Arthouse Bar</h1>
+                <p class="hero-subheading animate-on-scroll animate-slide-right" style="transition-delay: 0.2s;">
+                    Crafted Cocktails and Live Entertainment in NYC
+                </p>
+            </div>
+        </section>
+
+        <!-- Section 2: Bar Introduction Text -->
+        <section id="bar-intro-text" class="section-container">
+             <div class="intro-grid">
+                <div class="animate-on-scroll animate-slide-right">
+                    <h2 class="font-display-2 leading-snug">
+                        Inspired by Speakeasies and Harlem music clubs of the 1920s...
+                    </h2>
+                </div>
+                <div class="animate-on-scroll animate-slide-left" style="transition-delay: 0.2s;">
+                    <p class="mb-4">
+                        Arthouse Bar offers an inviting and vibrant atmosphere in our vintage lobby, perfect for casual meetings, mingling, or sipping one of our signature cocktails, like the Grapes Gatsby or the Speakeasy Sunset. Our cocktails are crafted with our own house-made syrups, juices and garnishes.
+                    </p>
+                    <p>
+                       As the sweater weather descends, Arthouse Bar tempts with our delectable pub food; freshly made flatbreads, garlic shrimp al ajillo or our famous hummus sliders; All are all made in house. Enjoy live entertainment on <a href="https://www.arthousehotelnyc.com/live-at-arthouse" class="live-link" target="_blank" rel="noopener noreferrer">select nights</a>; Jazz, piano, salsa and rock are all on offer throughout the month!
+                    </p>
+                </div>
+             </div>
+        </section>
+
+        <!-- Section 3: Bar Info -->
+        <section id="bar-info" class="section-container">
+             <div class="info-grid">
+                 <div class="info-block animate-on-scroll animate-slide-up">
+                    <h3>Find Us</h3>
+                    <p>Arthouse Hotel lobby</p>
+                    <p>2178 Broadway @ 77th street</p>
+                 </div>
+                 <div class="info-block animate-on-scroll animate-slide-up" style="transition-delay: 0.1s;">
+                    <h3>Contact Us</h3>
+                    <a href="tel:+12123621100">+1 212-362-1100</a>
+                    <a href="https://www.instagram.com/arthousehotelnyc/" target="_blank" rel="noopener noreferrer">@arthousehotelnyc</a>
+                 </div>
+                  <div class="info-block animate-on-scroll animate-slide-up" style="transition-delay: 0.2s;">
+                    <h3>Join Us</h3>
+                    <span>Sunday - Wednesday: 5pm - 12:00am</span>
+                    <span>Thursday: 5pm - 12:00am</span>
+                    <span>Friday & Saturday: 5pm - 1am</span>
+                 </div>
+                 <div class="info-block animate-on-scroll animate-slide-up" style="transition-delay: 0.3s;">
+                     <h3>Happy Hour</h3>
+                     <span>Monday - Friday: 5pm - 7pm</span>
+                     <span><strong>Sunday: All Day!</strong></span>
+                     <span class="mt-2 text-sm text-gray-light opacity-80">Cocktails $14 | Wine $12</span>
+                     <span class="text-sm text-gray-light opacity-80">Draft Beer $10 | Bottled Beer $8</span>
+                 </div>
+             </div>
+             <div class="menu-link-wrapper animate-on-scroll animate-slide-up" style="transition-delay: 0.4s;">
+                 <a href="https://qrcodes.pro/pF1BBn" class="btn-minimal" target="_blank" rel="noopener noreferrer">Check out our Menu!</a>
+             </div>
+        </section>
+
+        <!-- Section 4: Bar Features -->
+        <section id="bar-features" class="section-container">
+             <div class="features-heading animate-on-scroll animate-slide-up">
+                <h2 class="font-display-1">Upcoming at Arthouse Bar</h2>
+                <p>There is always something happening at Arthouse. In addition to our unparalleled live events, here is what you can explore this month.</p>
+             </div>
+
+             <div class="feature-grid">
+                 <!-- Feature 1: House-Made Bites -->
+                  <div class="feature-item grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                       <div class="feature-image animate-on-scroll animate-slide-left">
+                            <img src="https://image-tc.galaxy.tf/wijpeg-7a9chmwhfj43c28epzlrgk4yv/pizza-pink-lady_standard.jpg?crop=0%2C500%2C1333%2C1000&width=600" alt="French Charcuterie Board dish">
+                       </div>
+                       <div class="feature-text animate-on-scroll animate-slide-right" style="transition-delay: 0.1s;">
+                            <h3>House-Made Bites</h3>
+                            <p>Our selection of house made pizzas, charcuterie boards, sandwiches and more are a perfect way to compliment your favorite cocktail.</p>
+                            <a href="https://qrcodes.pro/pF1BBn" target="_blank" rel="noopener noreferrer">Check out our menu here</a>
+                       </div>
+                  </div>
+
+                 <!-- Feature 2: Events at Arthouse Bar -->
+                  <div class="feature-item grid grid-cols-1 md:grid-cols-2 gap-8 items-center mt-16 md:mt-24">
+                       <div class="feature-image animate-on-scroll animate-slide-right"> <!-- Đổi animation -->
+                           <img src="https://image-tc.galaxy.tf/wijpeg-a9zirk0sx1klim6l0jx09d7gh/library-table-set_standard.jpg?crop=0%2C636%2C887%2C665&width=600" alt="Library seating area">
+                       </div>
+                       <div class="feature-text animate-on-scroll animate-slide-left" style="transition-delay: 0.1s;"> <!-- Đổi animation -->
+                           <h3>Events at Arthouse Bar</h3>
+                           <p>The Library and the Lounge — Arthouse Bar's cozy lobby-level spaces — are the perfect settings for cocktail receptions, after-work get togethers, etc. THE LIBRARY features soft seating, original masterpieces, a restored fireplace (up to 50 guests). THE LOUNGE features a jewel box alcove, private bar (up to 30 guests).</p>
+                           <p>Contact the sales office to <a href="https://www.arthousehotelnyc.com/meetings-and-events/rfp-form" target="_blank" rel="noopener noreferrer">book your event</a>.</p>
+                       </div>
+                  </div>
+             </div>
+        </section>
+
+        <!-- Section 5: Booking (Sử dụng form đã sửa) -->
+        <section id="book" class="section-container">
+             <div class="animate-on-scroll animate-slide-up">
+                <h2 class="book-heading font-display-1">Make a Reservation</h2>
+                <p>Input your details below to check availability and secure your stay.</p>
+             </div>
+             <!-- Booking Form -->
+              <form action="https://reservations.travelclick.com/111046" method="GET" target="_blank" class="booking-form animate-on-scroll animate-slide-up" style="transition-delay: 0.2s;">
+                  <input type="hidden" name="Hotel" value="46829">
+                  <input type="hidden" name="Chain" value="32673">
+                  <div class="form-group">
+                      <label for="checkin">Check In</label>
+                      <input type="date" id="checkin" name="DateIn" required aria-label="Check-in Date">
+                  </div>
+                   <div class="form-group">
+                      <label for="checkout">Check Out</label>
+                      <input type="date" id="checkout" name="DateOut" required aria-label="Check-out Date">
+                  </div>
+                   <div class="form-group">
+                      <label for="rooms-count">Rooms</label>
+                      <select id="rooms-count" name="Rooms" aria-label="Number of Rooms">
+                          <option value="1">1</option> <option value="2">2</option> <option value="3">3</option>
+                          <option value="4">4</option> <option value="5">5</option> <option value="6">6</option>
+                          <option value="7">7</option> <option value="8">8</option> <option value="9">9</option>
+                          <option value="10">10</option>
+                      </select>
+                  </div>
+                   <div class="form-group">
+                      <label for="adults">Adults</label>
+                      <select id="adults" name="Adults" aria-label="Number of Adults">
+                          <option value="1">1</option> <option value="2">2</option> <option value="3">3</option>
+                          <option value="4">4</option> <option value="5">5</option> <option value="6">6</option>
+                          <option value="7">7</option> <option value="8">8</option> <option value="9">9</option>
+                          <option value="10">10</option>
+                      </select>
+                  </div>
+                   <div class="form-group">
+                      <label for="children">Children</label>
+                      <select id="children" name="Children" aria-label="Number of Children">
+                          <option value="0">0</option> <option value="1">1</option> <option value="2">2</option>
+                          <option value="3">3</option> <option value="4">4</option> <option value="5">5</option>
+                          <option value="6">6</option> <option value="7">7</option> <option value="8">8</option>
+                          <option value="9">9</option> <option value="10">10</option>
+                      </select>
+                  </div>
+                   <div class="form-group">
+                      <label for="promo">Promo Code</label>
+                      <input type="text" id="promo" name="RatePlanId" placeholder="Enter code (Optional)" aria-label="Promotion Code">
+                  </div>
+                   <div class="book-button-wrapper">
+                     <button type="submit" class="btn-book">Book Now</button>
+                   </div>
+                   <div class="phone-link-wrapper">
+                        <a href="tel:+12123621100" class="text-sm text-gray-light hover:text-accent-neon">Or Call Us: +1 212-362-1100</a>
+                   </div>
+              </form>
+        </section>
+
+    </main>
+
+    <!-- Minimal Footer -->
+    <footer class="site-footer-minimal">
+        <div class="footer-links">
+             <ul>
+               <li><a href="https://www.arthousehotelnyc.com/faq" target="_blank" rel="noopener noreferrer">FAQ</a></li>
+               <li><a href="https://www.arthousehotelnyc.com/terms" target="_blank" rel="noopener noreferrer">Terms & Conditions</a></li>
+               <li><a href="https://www.arthousehotelnyc.com/policies" target="_blank" rel="noopener noreferrer">Privacy Policies</a></li>
+               <li><a href="https://www.arthousehotelnyc.com/accessibility" target="_blank" rel="noopener noreferrer">Accessibility</a></li>
+               <li><a href="https://www.arthousehotelnyc.com/sign-up" target="_blank" rel="noopener noreferrer">Newsletter</a></li>
+               <li><a href="https://www.arthousehotelnyc.com/contact" target="_blank" rel="noopener noreferrer">Contact</a></li>
+               <li><a href="https://www.arthousehotelnyc.com/gallery" target="_blank" rel="noopener noreferrer">Gallery</a></li>
+               <li><a href="https://www.arthousehotelnyc.com/explore" target="_blank" rel="noopener noreferrer">Neighborhood</a></li>
+            </ul>
+        </div>
+        <div class="social-links-footer">
+             <a href="https://www.facebook.com/arthousehotelnyc/" target="_blank" rel="noopener noreferrer" aria-label="Facebook"> <svg fill="currentColor" viewBox="0 0 24 24"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v2.385z"/></svg> </a>
+             <a href="https://www.tripadvisor.com/Hotel_Review-g60763-d99288-Reviews-Arthouse_Hotel_New_York_City-New_York_City_New_York.html" target="_blank" rel="noopener noreferrer" aria-label="Tripadvisor"> <svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .5C5.649.5.5 5.649.5 12S5.649 23.5 12 23.5 23.5 18.351 23.5 12 18.351.5 12 .5zm0 17.125c-1.903 0-3.444-1.541-3.444-3.444s1.541-3.444 3.444-3.444 3.444 1.541 3.444 3.444-1.54 3.444-3.444 3.444zm5.611-8.236c-1.19 0-2.161-.97-2.161-2.161 0-1.191.971-2.161 2.161-2.161 1.191 0 2.161.97 2.161 2.161 0 1.191-.97 2.161-2.161 2.161zm-11.222 0c-1.19 0-2.161-.97-2.161-2.161 0-1.191.971-2.161 2.161-2.161 1.191 0 2.161.97 2.161 2.161 0 1.191-.97 2.161-2.161 2.161z"/></svg> </a>
+             <a href="https://www.instagram.com/arthousehotelnyc" target="_blank" rel="noopener noreferrer" aria-label="Instagram"> <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.148 3.227-1.667 4.77-4.919 4.918-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-3.25-.148-4.77-1.69-4.918-4.918-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.148-3.227 1.668-4.77 4.918-4.919 1.266-.058 1.646-.07 4.85-.07zm0-2.163c-3.259 0-3.667.015-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.057 1.28-.072 1.688-.072 4.947s.015 3.667.072 4.947c.2 4.358 2.618 6.78 6.98 6.98 1.28.057 1.688.072 4.947.072s3.667-.015 4.947-.072c4.358-.2 6.78-2.618 6.98-6.98.057-1.28.072-1.688.072-4.947s-.015-3.667-.072-4.947c-.2-4.358-2.618-6.78-6.98-6.98-1.28-.057-1.688-.072-4.947-.072zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.162 6.162 6.162 6.162-2.759 6.162-6.162-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.791-4-4s1.791-4 4-4 4 1.791 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg> </a>
+        </div>
+        <div class="copyright">
+            Arthouse Hotel New York City | 2178 Broadway at W 77th Street New York, NY 10024 <br>
+            © <span id="currentYear"></span> Arthouse Hotel NYC. All Rights Reserved.
+        </div>
+         <div class="designed-by">
+             Site Design Inspired by Experimental Concepts | Original Platform by <a href="https://www.travelclick.com/" target="_blank" rel="noopener noreferrer">TravelClick</a>
+         </div>
+    </footer>
+
+    <script>
+        // --- Cookie Banner Logic ---
+        const cookieBanner = document.getElementById('cookie-banner');
+        const acceptCookiesBtn = document.getElementById('accept-cookies');
+        if (localStorage.getItem('cookiesAccepted') === 'true') { cookieBanner.classList.add('hidden'); }
+        acceptCookiesBtn.addEventListener('click', () => { cookieBanner.classList.add('hidden'); localStorage.setItem('cookiesAccepted', 'true'); });
+
+        // --- Intersection Observer for Animations ---
+        const sections = document.querySelectorAll('.section-container');
+        const observerOptions = { root: null, rootMargin: '0px', threshold: 0.15 };
+        const sectionObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.querySelectorAll('.animate-on-scroll').forEach(el => el.classList.add('is-visible'));
+                }
+            });
+        }, observerOptions);
+        sections.forEach(section => sectionObserver.observe(section));
+
+        // --- Menu Overlay Logic ---
+        const menuTrigger = document.getElementById('menu-trigger');
+        const menuOverlay = document.getElementById('menu-overlay');
+        const closeMenuBtn = document.getElementById('close-menu');
+        const menuLinks = menuOverlay.querySelectorAll('nav a');
+        const body = document.body;
+        function openMenu() { menuOverlay.classList.add('active'); body.classList.add('menu-open'); }
+        function closeMenu() { menuOverlay.classList.remove('active'); body.classList.remove('menu-open'); }
+        menuTrigger.addEventListener('click', openMenu);
+        closeMenuBtn.addEventListener('click', closeMenu);
+        menuLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                const href = link.getAttribute('href');
+                closeMenu();
+                if (href && href.startsWith('#')) {
+                     e.preventDefault();
+                     const targetElement = document.querySelector(href);
+                     if (targetElement) { setTimeout(() => { targetElement.scrollIntoView({ behavior: 'smooth' }); }, 100); }
+                }
+            });
+        });
+
+        // --- Current Year ---
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        // --- Basic Date Picker Logic ---
+        function getFormattedDate(date) {
+            if (!(date instanceof Date) || isNaN(date)) { date = new Date(); }
+            const year = date.getFullYear();
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        const today = new Date();
+        const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+        const checkinInput = document.getElementById('checkin');
+        const checkoutInput = document.getElementById('checkout');
+        if (checkinInput) { const defaultCheckin = getFormattedDate(today); checkinInput.value = defaultCheckin; checkinInput.min = defaultCheckin; }
+        if (checkoutInput) { const defaultCheckout = getFormattedDate(tomorrow); checkoutInput.value = defaultCheckout; checkoutInput.min = defaultCheckout; }
+        if (checkinInput && checkoutInput) {
+            checkinInput.addEventListener('change', () => {
+                const checkinDate = new Date(checkinInput.value + 'T00:00:00');
+                 if (isNaN(checkinDate)) return;
+                const nextDay = new Date(checkinDate); nextDay.setDate(nextDay.getDate() + 1);
+                const nextDayFormatted = getFormattedDate(nextDay);
+                checkoutInput.min = nextDayFormatted;
+                const currentCheckoutDate = new Date(checkoutInput.value + 'T00:00:00');
+                 if (isNaN(currentCheckoutDate) || currentCheckoutDate < nextDay) { checkoutInput.value = nextDayFormatted; }
+            });
+        }
+    </script>
+
+</body>
+</html>

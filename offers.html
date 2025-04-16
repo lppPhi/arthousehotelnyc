@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARTHOUSE NYC ::: DECONSTRUCTED</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;700&family=Playfair+Display:wght@800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Palette: High Contrast & Neon */
+            --bg-main: #000000;
+            --text-main: #ffffff;
+            --accent-neon: #FF33FF; /* Neon Pink/Magenta */
+            --gray-muted: #555555;
+            --gray-light: #cccccc;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', sans-serif; background-color: var(--bg-main);
+            color: var(--text-main); overflow-x: hidden;
+            font-weight: 300; line-height: 1.6;
+        }
+        /* --- Body Lock Scroll --- */
+        body.menu-open { overflow: hidden; }
+
+        /* --- Typography --- */
+        h1, h2, h3, .font-display-1 {
+            font-family: 'Anton', sans-serif; text-transform: uppercase;
+            line-height: 0.9; color: var(--text-main);
+            margin-bottom: 1rem; letter-spacing: 0.01em;
+        }
+        .font-display-2 {
+             font-family: 'Playfair Display', serif; font-weight: 800;
+             line-height: 1.1; color: var(--text-main);
+        }
+        a { color: inherit; text-decoration: none; }
+        a:hover { color: var(--accent-neon); }
+
+        /* --- NEW HEADER (Minimal Trigger) --- */
+        #main-header {
+            position: fixed;
+            top: 20px; /* Khoảng cách từ top */
+            left: 20px; /* Khoảng cách từ left */
+            z-index: 1001; /* Trên overlay menu khi chưa mở */
+        }
+        #menu-trigger {
+            display: block;
+            cursor: pointer;
+            padding: 5px; /* Vùng click lớn hơn logo */
+            transition: transform 0.3s ease;
+        }
+        #menu-trigger img {
+            display: block;
+            height: 2.5rem; /* Kích thước logo */
+            filter: brightness(0) invert(1); /* Luôn trắng */
+            transition: opacity 0.3s ease;
+        }
+        #menu-trigger:hover img {
+            opacity: 0.8;
+        }
+        #menu-trigger:active {
+             transform: scale(0.95);
+        }
+
+        /* --- NEW Fullscreen Menu Overlay --- */
+        #menu-overlay {
+            position: fixed; inset: 0; /* Chiếm toàn màn hình */
+            background-color: rgba(0, 0, 0, 0.98); /* Nền đen mờ nhẹ */
+            color: var(--text-main);
+            z-index: 1000;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.4s ease-in-out, visibility 0s linear 0.4s;
+            display: flex;
+            align-items: center; justify-content: center;
+            flex-direction: column; text-align: center;
+        }
+        #menu-overlay.active {
+            opacity: 1; visibility: visible;
+            transition: opacity 0.4s ease-in-out, visibility 0s linear 0s;
+        }
+        #menu-overlay nav {
+            display: flex; flex-direction: column;
+            gap: 1.5rem; /* Khoảng cách giữa các link */
+        }
+        #menu-overlay nav a {
+            font-family: 'Anton', sans-serif; /* Font mạnh mẽ */
+            font-size: clamp(2rem, 6vw, 4rem); /* Kích thước lớn */
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-main);
+            text-decoration: none;
+            position: relative;
+            transition: color 0.3s ease, transform 0.3s ease;
+            padding: 0.5rem 0; /* Tăng vùng tương tác */
+        }
+        #menu-overlay nav a:hover {
+            color: var(--accent-neon);
+            transform: scale(1.05); /* Hiệu ứng hover nhẹ */
+        }
+        /* Link "Book Now" đặc biệt */
+        #menu-overlay .menu-book-now a {
+             margin-top: 2rem; /* Khoảng cách với link thường */
+             font-size: clamp(1.5rem, 4vw, 2.5rem);
+             color: var(--bg-main);
+             background-color: var(--accent-neon);
+             padding: 1rem 2.5rem;
+             transition: background-color 0.3s ease, color 0.3s ease;
+        }
+         #menu-overlay .menu-book-now a:hover {
+             background-color: var(--text-main);
+             color: var(--bg-main);
+             transform: scale(1.03);
+         }
+
+        #close-menu {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: none; border: none;
+            cursor: pointer; padding: 10px;
+        }
+        #close-menu svg {
+            width: 30px; height: 30px;
+            stroke: var(--text-main);
+            transition: stroke 0.3s ease, transform 0.3s ease;
+        }
+        #close-menu:hover svg {
+            stroke: var(--accent-neon);
+            transform: rotate(90deg);
+        }
+
+        /* --- Scroll Animations --- */
+        .section-container {
+             min-height: 100vh; position: relative; overflow: hidden;
+             padding: 15vh 5vw; /* Tăng padding dọc */
+             border-bottom: 1px dashed var(--gray-muted);
+             scroll-margin-top: 50px; /* Tránh header che content khi nhảy link */
+        }
+        .section-container:last-of-type { border-bottom: none; }
+
+        .animate-on-scroll { opacity: 0; transition: opacity 1s ease-out, transform 1s ease-out; }
+        .animate-slide-up { transform: translateY(100px); }
+        .animate-slide-left { transform: translateX(100px); }
+        .animate-slide-right { transform: translateX(-100px); }
+        .animate-scale-down { transform: scale(1.2); }
+        .is-visible { opacity: 1; transform: translate(0, 0) scale(1); }
+
+        /* --- Minimalist Button Style --- */
+        .btn-minimal {
+            display: inline-block; padding: 0.75rem 1.5rem;
+            border: 1px solid var(--accent-neon); color: var(--accent-neon);
+            font-family: 'Inter', sans-serif; font-weight: 700;
+            font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+            transition: background-color 0.3s ease, color 0.3s ease; text-align: center;
+        }
+        .btn-minimal:hover { background-color: var(--accent-neon); color: var(--bg-main); }
+         /* Nút chính (đặt phòng) */
+        .btn-book {
+            font-family: 'Anton', sans-serif; font-size: 1.8rem;
+            text-transform: uppercase; letter-spacing: 0.1em;
+            color: var(--bg-main); background-color: var(--accent-neon);
+            padding: 1rem 3rem; transition: background-color 0.3s ease, color 0.3s ease, letter-spacing 0.3s ease;
+            border: none; display: inline-block; text-align: center;
+        }
+        .btn-book:hover { background-color: var(--text-main); color: var(--bg-main); letter-spacing: 0.15em; }
+
+        /* --- CONTENT STYLING (Adapted from Markdown) --- */
+
+        /* Cookie Banner */
+        #cookie-banner {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background-color: var(--bg-main); color: var(--gray-light);
+            padding: 1rem 2rem; z-index: 2000;
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.85rem; border-top: 1px solid var(--gray-muted);
+            opacity: 1; transition: opacity 0.5s ease;
+        }
+        #cookie-banner.hidden { opacity: 0; pointer-events: none; }
+        #cookie-banner p { margin: 0; }
+        #cookie-banner a { color: var(--accent-neon); text-decoration: underline; }
+        #cookie-banner button {
+             background: var(--accent-neon); color: var(--bg-main); border: none;
+             padding: 0.5rem 1rem; font-size: 0.8rem; cursor: pointer;
+             text-transform: uppercase; letter-spacing: 0.05em;
+        }
+
+        /* Skip Link */
+        .skip-link {
+            position: absolute; top: -40px; left: 0; background: var(--accent-neon);
+            color: var(--bg-main); padding: 8px; z-index: 3000;
+            transition: top 0.3s ease-in-out;
+        }
+        .skip-link:focus { top: 0; }
+
+        /* --- Hero Section --- */
+        #hero { padding: 0; border-bottom: none; display: flex; align-items: center; justify-content: center; text-align: center; }
+        #hero .hero-background-image { position: absolute; inset: 0; z-index: 0; }
+        #hero .hero-background-image img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(90%) contrast(120%); opacity: 0.3; }
+        #hero .hero-content-main { position: relative; z-index: 1; max-width: 90%; }
+        #hero .hero-heading { font-size: clamp(3rem, 10vw, 8rem); margin-bottom: 0.5rem; }
+        #hero .hero-subheading { font-size: clamp(1rem, 3vw, 1.8rem); font-family: 'Inter', sans-serif; font-weight: 300; color: var(--gray-light); margin-bottom: 2rem; letter-spacing: 0.05em; }
+        #hero .scroll-prompt { position: absolute; bottom: 5vh; left: 50%; transform: translateX(-50%); z-index: 2; font-size: 0.8rem; color: var(--gray-muted); letter-spacing: 0.1em; text-transform: uppercase; animation: bounce 2s infinite ease-in-out; }
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translate(-50%, 0); } 40% { transform: translate(-50%, -10px); } 60% { transform: translate(-50%, -5px); } }
+
+        /* --- Introduction Section --- */
+        #intro { display: grid; grid-template-columns: 1fr; gap: 1rem; align-items: center; }
+        @media (min-width: 768px) { #intro { grid-template-columns: repeat(5, 1fr); gap: 0; } }
+        #intro .intro-text-block { background-color: var(--bg-main); padding: 3rem 2rem; z-index: 2; position: relative; border: 1px solid var(--gray-muted); }
+        @media (min-width: 768px) { #intro .intro-text-block { grid-column: 1 / span 3; grid-row: 1; padding: 4rem 3rem; } }
+        #intro .intro-heading { font-size: clamp(1.8rem, 4vw, 3.5rem); color: var(--accent-neon); }
+        #intro .intro-heading::before { content: ''; display: block; width: 50px; height: 3px; background-color: var(--accent-neon); margin-bottom: 1rem; }
+        #intro p { color: var(--gray-light); font-size: 0.95rem; margin-bottom: 1em; }
+        #intro .accessibility-link { display: block; margin-top: 1.5rem; font-size: 0.8rem; color: var(--gray-muted); text-decoration: underline; }
+        #intro .accessibility-link:hover { color: var(--accent-neon); }
+        #intro .intro-image-block { position: relative; height: 60vh; min-height: 300px; z-index: 1; }
+        @media (min-width: 768px) { #intro .intro-image-block { grid-column: 3 / span 3; grid-row: 1; height: 85vh; } }
+        #intro .intro-image-block img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: grayscale(50%) contrast(100%); mix-blend-mode: luminosity; opacity: 0.8; }
+        #intro .hidden-logo { position: absolute; bottom: 2rem; right: 2rem; z-index: 3; }
+        #intro .hidden-logo img { width: 100px; height: auto; opacity: 0.3; filter: brightness(0) invert(1); mix-blend-mode: difference; }
+
+        /* --- Offers Section --- */
+        #offers { padding: 0; }
+        #offers .offers-intro-text { padding: 10vh 5vw 5vh; max-width: 600px; margin: 0 auto; text-align: center; }
+        #offers .offers-heading { font-size: clamp(2.5rem, 6vw, 5rem); margin-bottom: 0.5rem; }
+        #offers .view-all-link { display: block; margin-top: 1rem; color: var(--accent-neon); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.9rem; }
+        .offers-horizontal-scroll { display: flex; overflow-x: auto; overflow-y: hidden; padding: 5vh 5vw 10vh; gap: 5vw; scrollbar-width: thin; scrollbar-color: var(--accent-neon) var(--gray-muted); }
+        .offers-horizontal-scroll::-webkit-scrollbar { height: 5px; } .offers-horizontal-scroll::-webkit-scrollbar-track { background: var(--gray-muted); } .offers-horizontal-scroll::-webkit-scrollbar-thumb { background-color: var(--accent-neon); border-radius: 0; }
+        .offer-item { flex: 0 0 70vw; max-width: 400px; border: 1px solid var(--gray-muted); background-color: #080808; display: flex; flex-direction: column; position: relative; }
+        .offer-item img { display: block; width: 100%; height: 200px; object-fit: cover; filter: grayscale(30%); opacity: 0.9; }
+        .offer-item-content { padding: 1.5rem; flex-grow: 1; display: flex; flex-direction: column; }
+        .offer-item h3 { font-family: 'Inter', sans-serif; font-size: 1.2rem; text-transform: none; letter-spacing: 0; font-weight: 700; color: var(--accent-neon); margin-bottom: 0.75rem; }
+        .offer-item p { font-size: 0.9rem; color: var(--gray-light); margin-bottom: 1.5rem; flex-grow: 1; }
+        .offer-item .offer-links { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+        .offer-item .offer-links a { font-size: 0.75rem; font-weight: 700; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid var(--gray-muted); padding-bottom: 2px; }
+        .offer-item .offer-links a:hover { color: var(--accent-neon); border-bottom-color: var(--accent-neon); }
+        .offer-item .offer-links a[target="_blank"]::after { content: ' \2197'; }
+
+        /* --- Rooms Section --- */
+        #rooms { padding: 0; border-bottom: none; }
+        #rooms .rooms-intro-text { padding: 10vh 5vw 5vh; max-width: 700px; margin: 0 auto; text-align: center; }
+        #rooms .rooms-heading { font-size: clamp(2.5rem, 6vw, 5rem); color: var(--text-main); margin-bottom: 0.5rem; }
+        #rooms .rooms-subheading { font-size: 1.1rem; color: var(--gray-light); margin-bottom: 1.5rem; }
+        #rooms .view-all-link { display: block; margin-top: 1rem; color: var(--accent-neon); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.9rem; }
+        .rooms-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 2rem; padding: 5vh 5vw 10vh; }
+        .room-card-grid { border: 1px solid var(--gray-muted); background-color: #050505; overflow: hidden; position: relative; }
+        .room-card-grid img { display: block; width: 100%; height: 250px; object-fit: cover; filter: saturate(0.8); }
+        .room-card-grid-content { padding: 1.5rem; }
+        .room-card-grid h3 { font-family: 'Inter', sans-serif; font-size: 1.2rem; text-transform: none; letter-spacing: 0; font-weight: 700; color: var(--text-main); margin-bottom: 0.75rem; }
+        .room-card-grid h3 a:hover { color: var(--accent-neon); }
+        .room-card-grid p { font-size: 0.85rem; color: var(--gray-light); margin-bottom: 1.5rem; }
+        .room-card-grid .room-links { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 1rem; }
+        .room-card-grid .room-links a { font-size: 0.75rem; font-weight: 700; color: var(--accent-neon); text-transform: uppercase; letter-spacing: 0.1em; }
+        .room-card-grid .room-links .book-link-room { border: 1px solid var(--accent-neon); padding: 0.4rem 0.8rem; }
+        .room-card-grid .room-links .book-link-room:hover { background-color: var(--accent-neon); color: var(--bg-main); }
+        .room-card-grid .room-links a[target="_blank"]::after { content: ' \2197'; }
+        .room-card-grid .rate-info { font-size: 0.8rem; color: var(--gray-muted); }
+
+        /* --- Dining Section --- */
+        #dining { display: grid; grid-template-columns: 1fr; align-items: center; min-height: 70vh; padding: 0; }
+        @media (min-width: 768px) { #dining { grid-template-columns: 1fr 1fr; } }
+        #dining .dining-image { height: 100%; min-height: 400px; width: 100%; background-size: cover; background-position: center; filter: contrast(110%) saturate(120%); }
+        @media (min-width: 768px) { #dining .dining-image { grid-column: 2 / 3; grid-row: 1; } }
+        #dining .dining-text { padding: 10vh 5vw; text-align: left; z-index: 1; background: linear-gradient(to right, var(--bg-main) 60%, transparent); }
+        @media (min-width: 768px) { #dining .dining-text { grid-column: 1 / 2; grid-row: 1; padding: 10vh 8vw; background: linear-gradient(to right, var(--bg-main) 70%, rgba(0,0,0,0.5) 90%, transparent); } }
+        #dining .dining-heading { font-size: clamp(2.5rem, 6vw, 4.5rem); color: var(--text-main); }
+        #dining p { font-size: 1rem; color: var(--gray-light); max-width: 500px; margin: 1.5rem 0 2rem 0; }
+
+        /* --- Location Section --- */
+        #location { display: flex; flex-direction: column; align-items: center; text-align: center; }
+        #location .location-heading { font-size: clamp(3rem, 8vw, 6rem); }
+        #location .address { font-size: 1.1rem; color: var(--gray-light); margin-bottom: 4rem; letter-spacing: 0.05em; }
+        .map-wrapper { width: 80%; max-width: 700px; position: relative; transform: rotate(-3deg); border: 10px solid var(--accent-neon); box-shadow: -10px 10px 0px var(--gray-muted); transition: transform 0.5s ease; }
+        .map-wrapper:hover { transform: rotate(0deg); }
+        .map-wrapper iframe { display: block; width: 100%; height: 400px; border: none; filter: grayscale(100%) invert(90%) contrast(90%); }
+
+        /* --- Booking Section --- */
+        #book { min-height: 90vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border-bottom: none; }
+        #book .book-heading { font-size: clamp(2.5rem, 6vw, 4.5rem); color: var(--text-main); margin-bottom: 1rem; }
+        #book p { color: var(--gray-light); max-width: 500px; margin: 0 auto 3rem auto; }
+        .booking-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1.5rem; width: 100%; max-width: 800px; margin-bottom: 3rem; }
+        .form-group { text-align: left; }
+        .form-group label { display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gray-light); margin-bottom: 0.5rem; }
+        .form-group input, .form-group select { width: 100%; background: transparent; border: 1px solid var(--gray-muted); color: var(--text-main); padding: 0.75rem; font-size: 1rem; font-family: 'Inter', sans-serif; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--accent-neon); }
+        .form-group select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2' stroke='%23cccccc'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5' /%3E%3C/svg%3E%0A"); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1em; }
+        #book .book-button-wrapper { margin-top: 1rem; grid-column: 1 / -1; text-align: center; }
+
+        /* --- Footer --- */
+        .site-footer-minimal { text-align: center; padding: 3rem 1rem 2rem; font-size: 0.8rem; color: var(--gray-muted); letter-spacing: 0.05em; border-top: 1px solid #222; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
+        .footer-links ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem 2rem; }
+        .footer-links a { color: var(--gray-muted); } .footer-links a:hover { color: var(--accent-neon); }
+        .social-links-footer a { margin: 0 0.75rem; }
+        .social-links-footer svg { width: 18px; height: 18px; fill: var(--gray-muted); transition: fill 0.3s ease; }
+        .social-links-footer a:hover svg { fill: var(--accent-neon); }
+        .copyright { font-size: 0.75rem; }
+        .designed-by { font-size: 0.7rem; opacity: 0.6; }
+        .designed-by a { text-decoration: underline; }
+
+    </style>
+</head>
+<body>
+
+    <!-- Cookie Banner -->
+    <div id="cookie-banner">
+        <p>By using our website you are consenting to our use of cookies in accordance with our Cookie Policy. <a href="https://www.arthousehotelnyc.com/policies" target="_blank" rel="noopener noreferrer">Read More</a></p>
+        <button id="accept-cookies">Accept</button>
+    </div>
+
+    <!-- Skip Link -->
+    <a href="#site-content" class="skip-link">Skip to main content</a>
+
+    <!-- NEW Minimal Header Trigger -->
+    <header id="main-header">
+        <a id="menu-trigger" title="Open Menu">
+            <img src="https://image-tc.galaxy.tf/wisvg-43nint0xjmzt82r0l2lzhzy67/arthouse-hotel-logo-white-transparent-background.svg?width=200" alt="Arthouse Hotel NYC Logo">
+        </a>
+    </header>
+
+    <!-- NEW Fullscreen Menu Overlay -->
+    <div id="menu-overlay">
+        <button id="close-menu" aria-label="Close Menu">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+        <nav>
+            <a href="#rooms" title="View Rooms">Rooms</a>
+            <a href="#offers" title="View Offers">Offers</a>
+            <a href="#dining" title="View Dining">Dining</a>
+             <!-- Link trực tiếp từ main.md -->
+             <a href="arthouse.html" target="_blank" rel="noopener noreferrer" title="Arthouse Bar">Arthouse Bar</a>
+             <a href="live.html" target="_blank" rel="noopener noreferrer" title="Live @ AH">Live @ AH</a>
+            <a href="event.html" target="_blank" rel="noopener noreferrer">Events</a>
+            <a href="https://www.arthousehotelnyc.com/explore" target="_blank" rel="noopener noreferrer">Neighborhood</a>
+            <a href="https://www.arthousehotelnyc.com/gallery" target="_blank" rel="noopener noreferrer">Gallery</a>
+            <a href="https://www.arthousehotelnyc.com/contact" target="_blank" rel="noopener noreferrer">Contact</a>
+            <a href="#location" title="View Location">Location</a>
+            <!-- Nút Book Now nổi bật -->
+            <div class="menu-book-now">
+                <a href="#book" title="Make a Reservation">Book Now</a>
+            </div>
+        </nav>
+    </div>
+
+    <main id="site-content">
+
+        <!-- Section 1: Hero -->
+        <section id="hero" class="section-container">
+             <div class="hero-background-image">
+                 <img src="https://image-tc.galaxy.tf/wijpeg-nuqzna0dmhlyqhlfdvy2md77/frontdesk-arthouse-hotel-nyc.jpg?width=1920" alt="Reception desk of Arthouse Hotel New York City" />
+             </div>
+            <div class="hero-content-main">
+                <h1 class="hero-heading animate-on-scroll animate-scale-down">Welcome to Arthouse Hotel</h1>
+                <h2 class="hero-subheading animate-on-scroll animate-slide-up" style="transition-delay: 0.2s;">A Vintage Boutique Hotel on the Upper West Side</h2>
+            </div>
+            <div class="scroll-prompt">Scroll</div>
+        </section>
+
+        <!-- Section 2: Introduction -->
+        <section id="intro" class="section-container">
+            <div class="intro-text-block animate-on-scroll animate-slide-right">
+                <h2 class="intro-heading font-display-1">Vintage Charm <br>& Boutique <br>Style</h2>
+                <p class="mt-6 mb-4">
+                    The word is out. Arthouse Hotel New York City has brought hip, vintage charm and boutique style to the posh Upper West Side of Manhattan. Setting a new standard for NYC hotels, our century-old building retains many of its historic accents, offering a warm sense of space you won't find anywhere else in the neighborhood.
+                </p>
+                <p class="mb-4">
+                    Stepping into our timeless yet cozy lobby, you are greeted by custom artwork, the original antique fireplace and a 1920s French elevator system. Marrying comfort with cutting-edge design, sophisticated style and whimsical fun, Arthouse Hotel New York City is your perfect pied-a-terre in Manhattan whether work or play brings you to town.
+                </p>
+                 <p class="mb-4">
+                    Walking distance from NYC icons like Central Park, Lincoln Center, the Museum of Natural History, and numerous city subways, our hotel offers a quiet escape from Manhattan's hustle and bustle.
+                 </p>
+                 <a href="https://www.arthousehotelnyc.com/accessibility" class="accessibility-link" target="_blank" rel="noopener noreferrer">Accessibility Statement</a>
+            </div>
+            <div class="intro-image-block animate-on-scroll animate-slide-left" style="transition-delay: 0.1s;">
+                 <img src="https://image-tc.galaxy.tf/wijpeg-bnpy0sughvcnhj6gmsudu0x6g/penthouse-1602-bedroom-arthouse-hotel-nyc.jpg?width=1000" alt="A hotel room with a bed, chair, and sliding glass doors leading to a balcony with city views.">
+                 <!-- Hidden Logo -->
+                 <div class="hidden-logo">
+                     <a href="https://www.arthousehotelnyc.com/" title="Back to the homepage">
+                         <img src="https://image-tc.galaxy.tf/wisvg-43nint0xjmzt82r0l2lzhzy67/arthouse-hotel-logo-white-transparent-background.svg?width=500" alt="Arthouse Hotel Logo">
+                     </a>
+                 </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Offers -->
+        <section id="offers" class="section-container">
+            <div class="offers-intro-text animate-on-scroll animate-slide-up">
+                 <h2 class="offers-heading font-display-1">Our Offers</h2>
+                 <a href="https://www.arthousehotelnyc.com/offers" class="view-all-link" target="_blank" rel="noopener noreferrer">View all offers</a>
+            </div>
+            <div class="offers-horizontal-scroll">
+                <!-- Offer 1: Pooch Vacation -->
+                 <div class="offer-item animate-on-scroll animate-slide-up" style="transition-delay: 0.1s;">
+                     <img src="https://image-tc.galaxy.tf/wijpeg-2l1f8vbz4kpsvzl7gdl0r4egj/pooch-package_standard.jpg?crop=0%2C120%2C534%2C401&width=400" alt="Dog illustration">
+                     <div class="offer-item-content">
+                         <h3><a href="https://www.arthousehotelnyc.com/offers/arthouse-pooch" target="_blank" rel="noopener noreferrer">Pooch Vacation</a></h3>
+                         <p>15% discount off the room. Dog bed set up during your stay. Doggie treats. Grab n' Go Breakfast…</p>
+                         <div class="offer-links">
+                             <a href="https://www.arthousehotelnyc.com/offers/arthouse-pooch" target="_blank" rel="noopener noreferrer">Read more</a>
+                             <a href="https://reservations.travelclick.com/111046?RatePlanId=5541694&_gl=1*1l9x97k*" target="_blank" rel="noopener noreferrer">Book now</a>
+                         </div>
+                     </div>
+                 </div>
+                 <!-- Offer 2: Fall Parking -->
+                 <div class="offer-item animate-on-scroll animate-slide-up" style="transition-delay: 0.2s;">
+                    <img src="https://image-tc.galaxy.tf/wijpeg-1y6r43b10a8evyqgrl4ca05pi/fall-driving-image_standard.jpg?crop=250%2C0%2C1500%2C1125&width=400" alt="Autumn scene">
+                    <div class="offer-item-content">
+                         <h3><a href="https://www.arthousehotelnyc.com/offers/self-parking-package" target="_blank" rel="noopener noreferrer">Fall Into Savings & Park Package</a></h3>
+                        <p>Experience the beauty of New York’s Upper West Side this autumn with our special Self-Parking Package.</p>
+                        <div class="offer-links">
+                             <a href="https://www.arthousehotelnyc.com/offers/self-parking-package" target="_blank" rel="noopener noreferrer">Read more</a>
+                             <a href="https://be.synxis.com/?Hotel=46829&Chain=32673&Rate=PARKIN&Nights=2&_gl=1*1l9x97k*" target="_blank" rel="noopener noreferrer">Book now</a>
+                         </div>
+                    </div>
+                 </div>
+                 <!-- Offer 3: Le Lis Breakfast -->
+                 <div class="offer-item animate-on-scroll animate-slide-up" style="transition-delay: 0.3s;">
+                    <img src="https://image-tc.galaxy.tf/wijpeg-3l4520tvfzbv2g5muo0mf24r5/web-patispackage_standard.jpg?crop=106%2C0%2C1689%2C1267&width=400" alt="A cup of coffee and a croissant">
+                    <div class="offer-item-content">
+                         <h3><a href="https://www.arthousehotelnyc.com/offers/patis-breakfast-package" target="_blank" rel="noopener noreferrer">Le Lis Breakfast Package</a></h3>
+                        <p>Includes Coffee and a Breakfast Pastry per person each morning at Le Lis Kosher Bakery!</p>
+                         <div class="offer-links">
+                             <a href="https://www.arthousehotelnyc.com/offers/patis-breakfast-package" target="_blank" rel="noopener noreferrer">Read more</a>
+                             <a href="https://be.synxis.com/?Hotel=46829&Chain=32673&Rate=BFPATI&_gl=1*1l9x97k*" target="_blank" rel="noopener noreferrer">Book now</a>
+                         </div>
+                    </div>
+                 </div>
+                  <!-- Offer 4: $50 Gift Card (from Popup) -->
+                  <div class="offer-item animate-on-scroll animate-slide-up" style="transition-delay: 0.4s;">
+                      <img src="https://image-tc.galaxy.tf/wijpeg-aogucik32ov4anh3ulegkqn6c/central-park-nyc-spring.jpg?width=400" alt="Pink flowers near a lamp post with a bridge">
+                      <div class="offer-item-content">
+                          <h3><a href="https://www.arthousehotelnyc.com/" target="_blank" rel="noopener noreferrer">Get a $50 Gift Card on Us</a></h3>
+                          <p>Stay 2 nights or more and receive a $50 gift card to fuel your journey.</p>
+                          <div class="offer-links">
+                              <a href="https://www.arthousehotelnyc.com/" target="_blank" rel="noopener noreferrer">Read more</a> {/* Link to homepage as per MD */}
+                              <a href="https://be.synxis.com/?Hotel=46829&Chain=32673&Rate=PKGAS&Nights=2" target="_blank" rel="noopener noreferrer">Book Now</a>
+                          </div>
+                      </div>
+                  </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Rooms -->
+        <section id="rooms" class="section-container">
+            <div class="rooms-intro-text animate-on-scroll animate-slide-up">
+                 <h2 class="rooms-heading font-display-1">Exceptionally Spacious</h2>
+                 <p class="rooms-subheading">On Manhattan’s Upper West Side, making the most of your living space is the ultimate luxury, and our rooms, suites and lofts merge private apartment-style savviness with all of the amenities you expect from a boutique hotel.</p>
+                 <a href="https://www.arthousehotelnyc.com/rooms" class="view-all-link" target="_blank" rel="noopener noreferrer">Explore our Rooms</a>
+            </div>
+             <!-- Image from original rooms intro -->
+             <div class="text-center my-12 animate-on-scroll animate-scale-down">
+                 <img src="https://image-tc.galaxy.tf/wijpeg-bnpy0sughvcnhj6gmsudu0x6g/penthouse-1602-bedroom-arthouse-hotel-nyc.jpg?width=1000" alt="A hotel room with a bed, chair, and sliding glass doors" class="max-w-4xl mx-auto w-full h-auto border border-[var(--gray-muted)]">
+             </div>
+
+            <div class="rooms-grid">
+                 <!-- Room 1: Standard Queen -->
+                 <div class="room-card-grid animate-on-scroll animate-slide-up" style="transition-delay: 0.1s;">
+                     <img src="https://image-tc.galaxy.tf/wijpeg-9407sbpnf2oqmxztom6qnw7gi/web-nylo-king-headboard_standard.jpg?crop=106%2C0%2C1689%2C1267&width=600" alt="Bed in Standard Queen">
+                     <div class="room-card-grid-content">
+                         <h3><a href="https://www.arthousehotelnyc.com/rooms/standard-queen" target="_blank" rel="noopener noreferrer">Standard Queen</a></h3>
+                         <p>Approx 240 sq ft, Level Bath Products, luxury thread count, feather free, wood flooring. In room safe. Floors 2-12.</p>
+                         <div class="room-links">
+                             <a href="https://www.arthousehotelnyc.com/rooms/standard-queen" target="_blank" rel="noopener noreferrer">Read more</a>
+                             <a href="https://gc.synxis.com/rez.aspx?Hotel=46829&room=496423&_gl=1*1l9x97k*" target="_blank" rel="noopener noreferrer" class="book-link-room">Book</a>
+                         </div>
+                         <!-- <div class="rate-info mt-2">Rates from $XXX</div> -->
+                     </div>
+                 </div>
+                 <!-- Room 2: Superior King -->
+                 <div class="room-card-grid animate-on-scroll animate-slide-up" style="transition-delay: 0.2s;">
+                    <img src="https://image-tc.galaxy.tf/wijpeg-98iinys17ma2rykcp60px7cib/web-nylo-king-standard-2_standard.jpg?crop=106%2C0%2C1689%2C1267&width=600" alt="Comfy bed in Superior King">
+                    <div class="room-card-grid-content">
+                        <h3><a href="https://www.arthousehotelnyc.com/rooms/superior-king" target="_blank" rel="noopener noreferrer">Superior King</a></h3>
+                        <p>Approx 260 Sq Ft. Amenities include: Level Bath Products, 100% combed cotton triple sheeting, feather free, wood flooring.</p>
+                         <div class="room-links">
+                             <a href="https://www.arthousehotelnyc.com/rooms/superior-king" target="_blank" rel="noopener noreferrer">Read more</a>
+                             <a href="https://gc.synxis.com/rez.aspx?Hotel=46829&room=496427&_gl=1*1l9x97k*" target="_blank" rel="noopener noreferrer" class="book-link-room">Book</a>
+                         </div>
+                         <!-- <div class="rate-info mt-2">Rates from $XXX</div> -->
+                    </div>
+                 </div>
+                 <!-- Room 3: Deluxe Two Double -->
+                 <div class="room-card-grid animate-on-scroll animate-slide-up" style="transition-delay: 0.3s;">
+                    <img src="https://image-tc.galaxy.tf/wijpeg-55mgp3spbtj0vlzgc8e0pt54c/web-nylo-double-standard-1_standard.jpg?crop=106%2C0%2C1688%2C1266&width=600" alt="Two beds in Deluxe Two Double">
+                    <div class="room-card-grid-content">
+                        <h3><a href="https://www.arthousehotelnyc.com/rooms/deluxe-double-double" target="_blank" rel="noopener noreferrer">Deluxe Two Double</a></h3>
+                        <p>Approx 280 sq ft. Spacious option for up to 4 persons. Luxury bedding, wooden floors, feather free bedding.</p>
+                         <div class="room-links">
+                             <a href="https://www.arthousehotelnyc.com/rooms/deluxe-double-double" target="_blank" rel="noopener noreferrer">Read more</a>
+                             <a href="https://gc.synxis.com/rez.aspx?Hotel=46829&room=496431&_gl=1*1l9x97k*" target="_blank" rel="noopener noreferrer" class="book-link-room">Book</a>
+                         </div>
+                         <!-- <div class="rate-info mt-2">Rates from $XXX</div> -->
+                    </div>
+                 </div>
+            </div>
+        </section>
+
+         <!-- Section 5: Dining -->
+        <section id="dining" class="section-container">
+            <div class="dining-image" style="background-image: url('https://image-tc.galaxy.tf/wijpeg-35ijt34rddeu4c94yr1p0nuiu/1593459754-5efa442a24fc3-thumb.jpg?width=1920');" role="img" aria-label="Dining area, Serafina Upper West, ArtHouse Hotel New York City"></div>
+             <div class="dining-text animate-on-scroll animate-slide-right">
+                 <h2 class="dining-heading font-display-1">Trendsetting<br>Dining</h2>
+                 <p>Arthouse Hotel New York City features three on-site restaurants and bars, including the Prohibition speakeasy-style Arthouse Bar, Northern Italian fare at Serafina Restaurant and RedFarm, a greenmarket take on Chinese cuisine.</p>
+                 <a href="https://www.arthousehotelnyc.com/dining" class="btn-minimal" target="_blank" rel="noopener noreferrer">Explore Dining Options</a>
+             </div>
+         </section>
+
+
+        <!-- Section 6: Location -->
+        <section id="location" class="section-container">
+            <div class="animate-on-scroll animate-slide-up">
+                 <h2 class="location-heading font-display-1">The <br> Epicenter</h2>
+                 <p class="address">2178 Broadway @ W 77th Street, New York, NY 10024</p>
+            </div>
+            <div class="map-wrapper animate-on-scroll animate-scale-down" style="transition-delay: 0.2s;">
+                 <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3021.043438559827!2d-73.982674384593!3d40.7819948793246!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25880a3b759c5%3A0x6888329988a1870d!2sArthouse%20Hotel%20New%20York%20City!5e0!3m2!1sen!2sus!4v1678886400000!5m2!1sen!2sus"
+                    allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Arthouse Hotel NYC Location Map">
+                 </iframe>
+            </div>
+        </section>
+
+        <!-- Section 7: Booking -->
+        <section id="book" class="section-container">
+             <div class="animate-on-scroll animate-slide-up">
+                <h2 class="book-heading font-display-1">Make a Reservation</h2>
+                <p>Input your details below to check availability and secure your stay.</p>
+             </div>
+             <!-- Booking Form -->
+              <form action="https://reservations.travelclick.com/111046" method="GET" target="_blank" class="booking-form animate-on-scroll animate-slide-up" style="transition-delay: 0.2s;">
+                  <input type="hidden" name="Hotel" value="46829"> <!-- Use correct Hotel ID -->
+                  <input type="hidden" name="Chain" value="32673"> <!-- Use correct Chain ID -->
+
+                  <div class="form-group">
+                      <label for="checkin">Check In</label>
+                      <input type="date" id="checkin" name="DateIn" required>
+                  </div>
+                   <div class="form-group">
+                      <label for="checkout">Check Out</label>
+                      <input type="date" id="checkout" name="DateOut" required>
+                  </div>
+                   <div class="form-group">
+                      <label for="rooms-count">Rooms</label>
+                      <select id="rooms-count" name="Rooms">
+                          <option value="1">1</option> <option value="2">2</option> <option value="3">3</option>
+                          <option value="4">4</option> <option value="5">5</option>
+                          <option value="6">6</option> <option value="7">7</option> <option value="8">8</option>
+                          <option value="9">9</option> <option value="10">10</option>
+                      </select>
+                  </div>
+                   <div class="form-group">
+                      <label for="adults">Adults</label>
+                      <select id="adults" name="Adults">
+                          <option value="1">1</option> <option value="2">2</option> <option value="3">3</option>
+                           <option value="4">4</option><option value="5">5</option>
+                           <option value="6">6</option> <option value="7">7</option> <option value="8">8</option>
+                           <option value="9">9</option> <option value="10">10</option>
+                      </select>
+                  </div>
+                   <div class="form-group">
+                      <label for="children">Children</label>
+                      <select id="children" name="Children">
+                          <option value="0">0</option> <option value="1">1</option> <option value="2">2</option>
+                          <option value="3">3</option> <option value="4">4</option> <option value="5">5</option>
+                           <option value="6">6</option> <option value="7">7</option> <option value="8">8</option>
+                           <option value="9">9</option> <option value="10">10</option>
+                      </select>
+                  </div>
+                   <div class="form-group">
+                      <label for="promo">Promo Code</label>
+                      <input type="text" id="promo" name="RatePlanId" placeholder="(Optional)">
+                      <!-- Note: TravelClick often uses RatePlanId for promo codes -->
+                  </div>
+                   <div class="book-button-wrapper">
+                     <button type="submit" class="btn-book">Book Now</button>
+                   </div>
+              </form>
+               <div class="text-center mt-4 animate-on-scroll animate-slide-up" style="transition-delay: 0.4s;">
+                    <a href="tel:+12123621100" class="text-sm text-gray-light hover:text-accent-neon">Or Call Us: +1 212-362-1100</a>
+                </div>
+        </section>
+
+    </main>
+
+    <!-- Minimal Footer -->
+    <footer class="site-footer-minimal">
+        <div class="footer-links">
+             <ul>
+               <li><a href="https://www.arthousehotelnyc.com/faq" target="_blank" rel="noopener noreferrer">FAQ</a></li>
+               <li><a href="https://www.arthousehotelnyc.com/terms" target="_blank" rel="noopener noreferrer">Terms & Conditions</a></li>
+               <li><a href="https://www.arthousehotelnyc.com/policies" target="_blank" rel="noopener noreferrer">Privacy Policies</a></li>
+               <li><a href="https://www.arthousehotelnyc.com/accessibility" target="_blank" rel="noopener noreferrer">Accessibility</a></li>
+               <li><a href="https://www.arthousehotelnyc.com/sign-up" target="_blank" rel="noopener noreferrer">Newsletter</a></li>
+               <li><a href="https://www.arthousehotelnyc.com/contact" target="_blank" rel="noopener noreferrer">Contact</a></li>
+               <li><a href="https://www.arthousehotelnyc.com/gallery" target="_blank" rel="noopener noreferrer">Gallery</a></li>
+               <li><a href="https://www.arthousehotelnyc.com/explore" target="_blank" rel="noopener noreferrer">Neighborhood</a></li>
+            </ul>
+        </div>
+        <div class="social-links-footer">
+             <a href="https://www.facebook.com/arthousehotelnyc/" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                 <svg fill="currentColor" viewBox="0 0 24 24"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v2.385z"/></svg>
+             </a>
+             <a href="https://www.tripadvisor.com/Hotel_Review-g60763-d99288-Reviews-Arthouse_Hotel_New_York_City-New_York_City_New_York.html" target="_blank" rel="noopener noreferrer" aria-label="Tripadvisor">
+                  <svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .5C5.649.5.5 5.649.5 12S5.649 23.5 12 23.5 23.5 18.351 23.5 12 18.351.5 12 .5zm0 17.125c-1.903 0-3.444-1.541-3.444-3.444s1.541-3.444 3.444-3.444 3.444 1.541 3.444 3.444-1.54 3.444-3.444 3.444zm5.611-8.236c-1.19 0-2.161-.97-2.161-2.161 0-1.191.971-2.161 2.161-2.161 1.191 0 2.161.97 2.161 2.161 0 1.191-.97 2.161-2.161 2.161zm-11.222 0c-1.19 0-2.161-.97-2.161-2.161 0-1.191.971-2.161 2.161-2.161 1.191 0 2.161.97 2.161 2.161 0 1.191-.97 2.161-2.161 2.161z"/></svg>
+             </a>
+             <a href="https://www.instagram.com/arthousehotelnyc" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                 <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.148 3.227-1.667 4.77-4.919 4.918-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-3.25-.148-4.77-1.69-4.918-4.918-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.148-3.227 1.668-4.77 4.918-4.919 1.266-.058 1.646-.07 4.85-.07zm0-2.163c-3.259 0-3.667.015-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.057 1.28-.072 1.688-.072 4.947s.015 3.667.072 4.947c.2 4.358 2.618 6.78 6.98 6.98 1.28.057 1.688.072 4.947.072s3.667-.015 4.947-.072c4.358-.2 6.78-2.618 6.98-6.98.057-1.28.072-1.688.072-4.947s-.015-3.667-.072-4.947c-.2-4.358-2.618-6.78-6.98-6.98-1.28-.057-1.688-.072-4.947-.072zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.162 6.162 6.162 6.162-2.759 6.162-6.162-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.791-4-4s1.791-4 4-4 4 1.791 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+             </a>
+        </div>
+        <div class="copyright">
+            Arthouse Hotel New York City | 2178 Broadway at W 77th Street New York, NY 10024 <br>
+            © <span id="currentYear"></span> Arthouse Hotel NYC. All Rights Reserved.
+        </div>
+         <div class="designed-by">
+             Site Design Inspired by Experimental Concepts | Original Platform by <a href="https://www.travelclick.com/" target="_blank" rel="noopener noreferrer">TravelClick</a>
+         </div>
+    </footer>
+
+    <script>
+        // --- Cookie Banner Logic ---
+        const cookieBanner = document.getElementById('cookie-banner');
+        const acceptCookiesBtn = document.getElementById('accept-cookies');
+        if (localStorage.getItem('cookiesAccepted') === 'true') { cookieBanner.classList.add('hidden'); }
+        acceptCookiesBtn.addEventListener('click', () => { cookieBanner.classList.add('hidden'); localStorage.setItem('cookiesAccepted', 'true'); });
+
+        // --- Intersection Observer for Animations ---
+        const sections = document.querySelectorAll('.section-container');
+        const observerOptions = { root: null, rootMargin: '0px', threshold: 0.2 };
+        const sectionObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.querySelectorAll('.animate-on-scroll').forEach(el => el.classList.add('is-visible'));
+                }
+            });
+        }, observerOptions);
+        sections.forEach(section => sectionObserver.observe(section));
+
+        // --- Menu Overlay Logic ---
+        const menuTrigger = document.getElementById('menu-trigger');
+        const menuOverlay = document.getElementById('menu-overlay');
+        const closeMenuBtn = document.getElementById('close-menu');
+        const menuLinks = menuOverlay.querySelectorAll('nav a');
+        const body = document.body;
+        function openMenu() { menuOverlay.classList.add('active'); body.classList.add('menu-open'); }
+        function closeMenu() { menuOverlay.classList.remove('active'); body.classList.remove('menu-open'); }
+        menuTrigger.addEventListener('click', openMenu);
+        closeMenuBtn.addEventListener('click', closeMenu);
+        menuLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                const href = link.getAttribute('href');
+                if (href && href.startsWith('#')) {
+                     e.preventDefault();
+                     closeMenu();
+                     const targetElement = document.querySelector(href);
+                     if (targetElement) { setTimeout(() => { targetElement.scrollIntoView({ behavior: 'smooth' }); }, 100); }
+                } else if (!link.getAttribute('target')) { closeMenu(); }
+            });
+        });
+
+        // --- Current Year ---
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        // --- Basic Date Picker Logic ---
+        function getFormattedDate(date) {
+            const year = date.getFullYear();
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        const today = new Date();
+        const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+        const checkinInput = document.getElementById('checkin');
+        const checkoutInput = document.getElementById('checkout');
+        if (checkinInput) { checkinInput.value = getFormattedDate(today); checkinInput.min = getFormattedDate(today); }
+        if (checkoutInput) { checkoutInput.value = getFormattedDate(tomorrow); checkoutInput.min = getFormattedDate(tomorrow); }
+        if (checkinInput && checkoutInput) {
+            checkinInput.addEventListener('change', () => {
+                const checkinDate = new Date(checkinInput.value);
+                const nextDay = new Date(checkinDate); nextDay.setDate(nextDay.getDate() + 1);
+                checkoutInput.min = getFormattedDate(nextDay);
+                if (new Date(checkoutInput.value) < nextDay) { checkoutInput.value = getFormattedDate(nextDay); }
+            });
+        }
+    </script>
+
+</body>
+</html>

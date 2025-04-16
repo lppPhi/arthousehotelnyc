@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARTHOUSE NYC ::: ROOMS ::: DECONSTRUCTED</title> <!-- Title cập nhật -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;700;900&family=Playfair+Display:wght@800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Palette: High Contrast & Neon */
+            --bg-main: #000000;
+            --text-main: #ffffff;
+            --accent-neon: #FF33FF; /* Neon Pink/Magenta */
+            --gray-muted: #555555;
+            --gray-light: #cccccc;
+            --gray-dark: #222222; /* Darker gray for subtle backgrounds */
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', sans-serif; background-color: var(--bg-main);
+            color: var(--text-main); overflow-x: hidden;
+            font-weight: 300; line-height: 1.6;
+        }
+        body.menu-open { overflow: hidden; }
+
+        /* --- Typography --- */
+        h1, h2, h3, .font-display-1 {
+            font-family: 'Anton', sans-serif; text-transform: uppercase;
+            line-height: 0.9; color: var(--text-main);
+            margin-bottom: 1rem; letter-spacing: 0.01em;
+        }
+        .font-display-2 {
+             font-family: 'Playfair Display', serif; font-weight: 800;
+             line-height: 1.1; color: var(--text-main);
+        }
+        a { color: inherit; text-decoration: none; }
+        a:hover { color: var(--accent-neon); }
+
+        /* --- Header (Minimal Trigger) --- */
+        #main-header { position: fixed; top: 20px; left: 20px; z-index: 1001; }
+        #menu-trigger { display: block; cursor: pointer; padding: 5px; transition: transform 0.3s ease; }
+        #menu-trigger img { display: block; height: 2.5rem; filter: brightness(0) invert(1); transition: opacity 0.3s ease; }
+        #menu-trigger:hover img { opacity: 0.8; }
+        #menu-trigger:active { transform: scale(0.95); }
+
+        /* --- Fullscreen Menu Overlay --- */
+        #menu-overlay { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.98); color: var(--text-main); z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.4s ease-in-out, visibility 0s linear 0.4s; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; }
+        #menu-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.4s ease-in-out, visibility 0s linear 0s; }
+        #menu-overlay nav { display: flex; flex-direction: column; gap: 1.5rem; }
+        #menu-overlay nav a { font-family: 'Anton', sans-serif; font-size: clamp(2rem, 6vw, 4rem); text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-main); text-decoration: none; position: relative; transition: color 0.3s ease, transform 0.3s ease; padding: 0.5rem 0; }
+        #menu-overlay nav a:hover { color: var(--accent-neon); transform: scale(1.05); }
+        #menu-overlay .menu-book-now a { margin-top: 2rem; font-size: clamp(1.5rem, 4vw, 2.5rem); color: var(--bg-main); background-color: var(--accent-neon); padding: 1rem 2.5rem; transition: background-color 0.3s ease, color 0.3s ease; }
+        #menu-overlay .menu-book-now a:hover { background-color: var(--text-main); color: var(--bg-main); transform: scale(1.03); }
+        #close-menu { position: absolute; top: 30px; right: 30px; background: none; border: none; cursor: pointer; padding: 10px; }
+        #close-menu svg { width: 30px; height: 30px; stroke: var(--text-main); transition: stroke 0.3s ease, transform 0.3s ease; }
+        #close-menu:hover svg { stroke: var(--accent-neon); transform: rotate(90deg); }
+
+        /* --- Scroll Animations --- */
+        .section-container { min-height: 80vh; position: relative; overflow: hidden; padding: 15vh 5vw; border-bottom: 1px dashed var(--gray-muted); scroll-margin-top: 50px; }
+        .section-container:last-of-type { border-bottom: none; }
+        .animate-on-scroll { opacity: 0; transition: opacity 1s ease-out, transform 1s ease-out; }
+        .animate-slide-up { transform: translateY(100px); }
+        .animate-slide-left { transform: translateX(100px); }
+        .animate-slide-right { transform: translateX(-100px); }
+        .animate-scale-down { transform: scale(1.2); }
+        .is-visible { opacity: 1; transform: translate(0, 0) scale(1); }
+
+        /* --- Minimalist Button Style --- */
+        .btn-minimal { display: inline-block; padding: 0.75rem 1.5rem; border: 1px solid var(--accent-neon); color: var(--accent-neon); font-family: 'Inter', sans-serif; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; transition: background-color 0.3s ease, color 0.3s ease; text-align: center; }
+        .btn-minimal:hover { background-color: var(--accent-neon); color: var(--bg-main); }
+        .btn-book { font-family: 'Anton', sans-serif; font-size: 1.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--bg-main); background-color: var(--accent-neon); padding: 1rem 3rem; transition: background-color 0.3s ease, color 0.3s ease, letter-spacing 0.3s ease; border: none; display: inline-block; text-align: center; cursor: pointer; }
+        .btn-book:hover { background-color: var(--text-main); color: var(--bg-main); letter-spacing: 0.15em; }
+
+        /* --- CONTENT STYLING --- */
+
+        /* Cookie Banner */
+        #cookie-banner { position: fixed; bottom: 0; left: 0; width: 100%; background-color: var(--bg-main); color: var(--gray-light); padding: 1rem 2rem; z-index: 2000; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; border-top: 1px solid var(--gray-muted); opacity: 1; transition: opacity 0.5s ease; }
+        #cookie-banner.hidden { opacity: 0; pointer-events: none; }
+        #cookie-banner p { margin: 0; } #cookie-banner a { color: var(--accent-neon); text-decoration: underline; }
+        #cookie-banner button { background: var(--accent-neon); color: var(--bg-main); border: none; padding: 0.5rem 1rem; font-size: 0.8rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; }
+
+        /* Skip Link */
+        .skip-link { position: absolute; top: -40px; left: 0; background: var(--accent-neon); color: var(--bg-main); padding: 8px; z-index: 3000; transition: top 0.3s ease-in-out; }
+        .skip-link:focus { top: 0; }
+
+        /* --- Hero Section (for Rooms Page) --- */
+        #hero-rooms { /* ID mới */
+            padding: 0; border-bottom: none; display: flex; align-items: center;
+            justify-content: center; text-align: center; min-height: 75vh;
+            position: relative; overflow: hidden;
+        }
+        #hero-rooms .hero-background-image { position: absolute; inset: 0; z-index: 0; }
+        #hero-rooms .hero-background-image img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(20%) contrast(100%) brightness(0.9); opacity: 0.8; }
+        #hero-rooms::after { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.4); z-index: 1; }
+        #hero-rooms .hero-content-main { position: relative; z-index: 2; max-width: 90%; padding: 5vh 5vw; }
+        #hero-rooms .hero-heading { font-size: clamp(3.5rem, 11vw, 8rem); margin-bottom: 1rem; line-height: 0.9; }
+        #hero-rooms .hero-subheading { font-size: clamp(1.1rem, 3vw, 1.8rem); font-family: 'Inter', sans-serif; font-weight: 300; color: var(--gray-light); max-width: 700px; margin: 0 auto; letter-spacing: 0.05em; }
+
+        /* --- Rooms Intro Section --- */
+        #rooms-intro { padding: 10vh 5vw; text-align: center; }
+        #rooms-intro p { max-width: 800px; margin: 0 auto 1.5rem auto; font-size: 1.05rem; color: var(--gray-light); line-height: 1.7; }
+        #rooms-intro strong { font-weight: 700; color: var(--text-main); }
+        #rooms-intro .accessibility-link { display: block; margin-top: 2rem; font-size: 0.8rem; color: var(--gray-muted); text-decoration: underline; }
+        #rooms-intro .accessibility-link:hover { color: var(--accent-neon); }
+
+        /* --- Room Categories Section --- */
+        #room-categories { padding: 5vh 0 15vh; } /* Padding trên dưới */
+        .room-category { margin-bottom: 8vh; } /* Khoảng cách giữa các category */
+        .category-heading {
+            text-align: center; margin-bottom: 4rem;
+            border-top: 1px dashed var(--gray-muted);
+            padding-top: 6vh;
+        }
+        .category-heading h2 {
+            font-size: clamp(2rem, 5vw, 3.5rem); color: var(--accent-neon);
+            margin-bottom: 0.5rem; font-family: 'Inter', sans-serif; font-weight: 700;
+            text-transform: none; letter-spacing: -0.02em; line-height: 1.2;
+        }
+
+        /* --- Room List Grid --- */
+        .room-list-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
+            gap: 2rem;
+            max-width: 1400px; /* Rộng hơn chút */
+            margin: 0 auto; padding: 0 5vw; /* Padding ngang */
+        }
+
+        .room-list-item {
+            border: 1px solid var(--gray-muted);
+            background-color: var(--gray-dark);
+            overflow: hidden;
+            position: relative;
+            display: flex; flex-direction: column;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .room-list-item:hover {
+             border-color: var(--accent-neon);
+             box-shadow: 0 0 20px rgba(255, 51, 255, 0.2); /* Shadow neon nhẹ */
+        }
+        .room-list-item-image { display: block; position: relative; }
+        .room-list-item-image img { display: block; width: 100%; height: 280px; object-fit: cover; filter: saturate(1); transition: filter 0.5s ease; }
+        .room-list-item:hover .room-list-item-image img { filter: saturate(1.2) contrast(1.1); }
+
+        .room-list-item-content { padding: 1.5rem; flex-grow: 1; display: flex; flex-direction: column; }
+        .room-list-item-content h3 { /* Tên phòng là link */
+            font-family: 'Anton', sans-serif; font-size: 1.6rem; text-transform: uppercase; letter-spacing: 0.05em;
+            color: var(--text-main); margin-bottom: 1rem; line-height: 1.1;
+        }
+        .room-list-item-content h3 a:hover { color: var(--accent-neon); }
+        .room-list-item-content p { font-size: 0.9rem; color: var(--gray-light); margin-bottom: 1.5rem; flex-grow: 1; }
+        .room-list-item-links { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-top: auto; border-top: 1px solid var(--gray-muted); padding-top: 1rem; }
+        .room-list-item-links a { font-size: 0.75rem; font-weight: 700; color: var(--accent-neon); text-transform: uppercase; letter-spacing: 0.1em; }
+        .room-list-item-links .book-link-room { border: 1px solid var(--accent-neon); padding: 0.4rem 0.8rem; transition: background-color 0.3s, color 0.3s; }
+        .room-list-item-links .book-link-room:hover { background-color: var(--accent-neon); color: var(--bg-main); }
+        .room-list-item-links a[target="_blank"]::after { content: ' \2197'; }
+        /* Bỏ rate info */
+
+
+        /* --- Booking Prompt --- */
+        #book-minimal { padding: 10vh 5vw; text-align: center; border-top: 1px dashed var(--gray-muted); }
+        #book-minimal h2 { font-size: clamp(2rem, 5vw, 3.5rem); margin-bottom: 2rem; }
+
+        /* --- Footer --- */
+        .site-footer-minimal { text-align: center; padding: 3rem 1rem 2rem; font-size: 0.8rem; color: var(--gray-muted); letter-spacing: 0.05em; border-top: 1px solid #222; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
+        .footer-links ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem 2rem; }
+        .footer-links a { color: var(--gray-muted); } .footer-links a:hover { color: var(--accent-neon); }
+        .social-links-footer a { margin: 0 0.75rem; }
+        .social-links-footer svg { width: 18px; height: 18px; fill: var(--gray-muted); transition: fill 0.3s ease; }
+        .social-links-footer a:hover svg { fill: var(--accent-neon); }
+        .copyright { font-size: 0.75rem; }
+        .designed-by { font-size: 0.7rem; opacity: 0.6; }
+        .designed-by a { text-decoration: underline; }
+
+    </style>
+</head>
+<body>
+
+    <!-- Cookie Banner -->
+    <div id="cookie-banner">
+        <p>By using our website you are consenting to our use of cookies in accordance with our Cookie Policy. <a href="https://www.arthousehotelnyc.com/policies" target="_blank" rel="noopener noreferrer">Read More</a></p>
+        <button id="accept-cookies">Accept</button>
+    </div>
+
+    <!-- Skip Link -->
+    <a href="#site-content" class="skip-link">Skip to main content</a>
+
+    <!-- Minimal Header Trigger -->
+    <header id="main-header">
+        <a id="menu-trigger" title="Open Menu">
+            <img src="https://image-tc.galaxy.tf/wisvg-43nint0xjmzt82r0l2lzhzy67/arthouse-hotel-logo-white-transparent-background.svg?width=200" alt="Arthouse Hotel NYC Logo">
+        </a>
+    </header>
+
+    <!-- Fullscreen Menu Overlay -->
+    <div id="menu-overlay">
+        <button id="close-menu" aria-label="Close Menu">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+        <nav>
+             <!-- Links cập nhật cho trang Rooms -->
+             <a href="room.html" title="View Rooms">Rooms</a> <!-- Link nội bộ -->
+             <a href="offers.html" title="View Offers">Offers</a>
+             <a href="arthouse.html" title="Arthouse Bar">Arthouse Bar</a>
+             <a href="live.html" title="Live @ AH">Live @ AH</a>
+             <a href="dining.html" title="View Dining">Dining</a>
+             <a href="event.html" target="_blank" rel="noopener noreferrer">Events</a>
+             <a href="https://www.arthousehotelnyc.com/explore" target="_blank" rel="noopener noreferrer">Neighborhood</a>
+             <a href="https://www.arthousehotelnyc.com/gallery" target="_blank" rel="noopener noreferrer">Gallery</a>
+             <a href="https://www.arthousehotelnyc.com/contact" target="_blank" rel="noopener noreferrer">Contact</a>
+            <div class="menu-book-now">
+                 <a href="https://reservations.travelclick.com/111046" target="_blank" rel="noopener noreferrer">Book Stay</a>
+            </div>
+        </nav>
+    </div>
+
+    <main id="site-content">
+
+        <!-- Section 1: Hero for Rooms Page -->
+        <section id="hero-rooms" class="section-container">
+            <div class="hero-background-image">
+                 <!-- Sử dụng ảnh hero từ room.md -->
+                 <img src="https://image-tc.galaxy.tf/wijpeg-9jfsutryywtl09tm5hnpm8rwj/arthouse-room-double-beds.jpg?width=1920" alt="Accessible Deluxe Double With Roll-In Shower at ArtHouse Hotel" />
+            </div>
+            <div class="hero-content-main">
+                <h1 class="hero-heading animate-on-scroll animate-scale-down">Modern New York Hotel Rooms</h1>
+                <p class="hero-subheading animate-on-scroll animate-slide-up" style="transition-delay: 0.2s;">
+                   Relax in Boutique Luxury on Manhattan's Upper West Side
+                </p>
+            </div>
+        </section>
+
+        <!-- Section 2: Rooms Intro Text -->
+        <section id="rooms-intro" class="section-container">
+             <div class="animate-on-scroll animate-slide-up">
+                 <p class="mb-6">
+                    Arthouse Hotel New York City sets a new standard for style and comfort among boutique hotels on Manhattan’s Upper West Side. Modeled after the famously space-savvy designs of New York City apartments, our hotel rooms, lofts and suites marry relaxing décor with modern luxuries. Some feature private outdoor balconies with seating, while others afford breathtaking views of Central Park, the Hudson River or Upper West Side skyline.
+                 </p>
+                 <p>
+                     All rooms at Arthouse Hotel New York City feature wood floors and modern furnishings and artwork. Sophisticated design touches include contemporary light wood furniture, crisp white linens and opulent blue drapes. Expansive, industrial-style windows fill living spaces with plenty of natural light. Amenities include 42" flat-screen HD televisions, Keurig coffee makers, Wi-Fi, Pure bath products and bottled water.
+                 </p>
+                  <a href="https://www.arthousehotelnyc.com/accessibility" class="accessibility-link" target="_blank" rel="noopener noreferrer">View our Accessibility Statement</a>
+             </div>
+        </section>
+
+        <!-- Section 3: Room Categories -->
+        <section id="room-categories" class="section-container">
+
+             <!-- Category: Standard Rooms -->
+             <div class="room-category">
+                 <div class="category-heading animate-on-scroll animate-slide-up">
+                     <h2>Relax in Our Standard Rooms</h2>
+                 </div>
+                 <div class="room-list-grid">
+                     <!-- Room: Standard Queen -->
+                     <div class="room-list-item animate-on-scroll animate-slide-up" style="transition-delay: 0.1s;">
+                         <a href="https://www.arthousehotelnyc.com/rooms/standard-queen" target="_blank" rel="noopener noreferrer" class="room-list-item-image">
+                             <img src="https://image-tc.galaxy.tf/wijpeg-9407sbpnf2oqmxztom6qnw7gi/web-nylo-king-headboard_standard.jpg?crop=106%2C0%2C1689%2C1267&width=600" alt="Bed in Standard Queen">
+                         </a>
+                         <div class="room-list-item-content">
+                             <h3><a href="https://www.arthousehotelnyc.com/rooms/standard-queen" target="_blank" rel="noopener noreferrer">Standard Queen</a></h3>
+                             <p>Approx 240 sq ft, Level Bath Products, luxury thread count, feather free, wood flooring. In room safe. Floors 2-12.</p>
+                             <div class="room-list-item-links">
+                                 <a href="https://www.arthousehotelnyc.com/rooms/standard-queen" target="_blank" rel="noopener noreferrer">Read more</a>
+                                 <a href="https://www.arthousehotelnyc.com/rooms" target="_blank" rel="noopener noreferrer" class="book-link-room">Book Now</a>
+                             </div>
+                         </div>
+                     </div>
+                      <!-- Add other Standard rooms if available in MD -->
+                 </div>
+             </div>
+
+             <!-- Category: Superior Rooms -->
+             <div class="room-category">
+                 <div class="category-heading animate-on-scroll animate-slide-up">
+                     <h2>Enjoy Extra Space and Amenities of our Superior Rooms</h2>
+                 </div>
+                 <div class="room-list-grid">
+                     <!-- Room: Superior King -->
+                     <div class="room-list-item animate-on-scroll animate-slide-up" style="transition-delay: 0.1s;">
+                         <a href="https://www.arthousehotelnyc.com/rooms/superior-king" target="_blank" rel="noopener noreferrer" class="room-list-item-image">
+                             <img src="https://image-tc.galaxy.tf/wijpeg-98iinys17ma2rykcp60px7cib/web-nylo-king-standard-2_standard.jpg?crop=106%2C0%2C1689%2C1267&width=600" alt="Comfy bed in Superior King">
+                         </a>
+                         <div class="room-list-item-content">
+                             <h3><a href="https://www.arthousehotelnyc.com/rooms/superior-king" target="_blank" rel="noopener noreferrer">Superior King</a></h3>
+                             <p>Approx 260 Sq Ft. Amenities include: Level Bath Products, 100% combed cotton triple sheeting, feather free, wood flooring.</p>
+                             <div class="room-list-item-links">
+                                 <a href="https://www.arthousehotelnyc.com/rooms/superior-king" target="_blank" rel="noopener noreferrer">Read more</a>
+                                 <a href="https://www.arthousehotelnyc.com/rooms" target="_blank" rel="noopener noreferrer" class="book-link-room">Book Now</a>
+                             </div>
+                         </div>
+                     </div>
+                     <!-- Add other Superior rooms if available in MD -->
+                 </div>
+             </div>
+
+             <!-- Category: Deluxe Rooms -->
+             <div class="room-category">
+                 <div class="category-heading animate-on-scroll animate-slide-up">
+                     <h2>Indulge in our Luxurious and Spacious Deluxe Rooms</h2>
+                 </div>
+                 <div class="room-list-grid">
+                     <!-- Room: Deluxe Two Double -->
+                     <div class="room-list-item animate-on-scroll animate-slide-up" style="transition-delay: 0.1s;">
+                         <a href="https://www.arthousehotelnyc.com/rooms/deluxe-double-double" target="_blank" rel="noopener noreferrer" class="room-list-item-image">
+                             <img src="https://image-tc.galaxy.tf/wijpeg-55mgp3spbtj0vlzgc8e0pt54c/web-nylo-double-standard-1_standard.jpg?crop=106%2C0%2C1688%2C1266&width=600" alt="Two beds in Deluxe Two Double">
+                         </a>
+                         <div class="room-list-item-content">
+                             <h3><a href="https://www.arthousehotelnyc.com/rooms/deluxe-double-double" target="_blank" rel="noopener noreferrer">Deluxe Two Double</a></h3>
+                             <p>Approx 280 sq ft. Spacious option for up to 4 persons. Luxury bedding, wooden floors, feather free bedding.</p>
+                             <div class="room-list-item-links">
+                                 <a href="https://www.arthousehotelnyc.com/rooms/deluxe-double-double" target="_blank" rel="noopener noreferrer">Read more</a>
+                                 <a href="https://www.arthousehotelnyc.com/rooms" target="_blank" rel="noopener noreferrer" class="book-link-room">Book Now</a>
+                             </div>
+                         </div>
+                     </div>
+                     <!-- Room: Broadway View Deluxe King -->
+                      <div class="room-list-item animate-on-scroll animate-slide-up" style="transition-delay: 0.2s;">
+                         <a href="https://www.arthousehotelnyc.com/rooms/broadway-view-deluxe-king" target="_blank" rel="noopener noreferrer" class="room-list-item-image">
+                             <img src="https://image-tc.galaxy.tf/wijpeg-b87cxl0q3gmcsm0jrbnnfwkvb/web-nylo-king-city-view-1_standard.jpg?crop=106%2C0%2C1688%2C1266&width=600" alt="Broadway View Deluxe King">
+                         </a>
+                         <div class="room-list-item-content">
+                             <h3><a href="https://www.arthousehotelnyc.com/rooms/broadway-view-deluxe-king" target="_blank" rel="noopener noreferrer">Broadway View Deluxe King</a></h3>
+                             <p>Approx 258 - 340 sq ft. Laptop sized in-room safes, luxury 100% combed cotton triple sheeting, wood flooring.</p>
+                             <div class="room-list-item-links">
+                                 <a href="https://www.arthousehotelnyc.com/rooms/broadway-view-deluxe-king" target="_blank" rel="noopener noreferrer">Read more</a>
+                                 <a href="https://www.arthousehotelnyc.com/rooms" target="_blank" rel="noopener noreferrer" class="book-link-room">Book Now</a>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+
+              <!-- Category: Suites -->
+             <div class="room-category">
+                 <div class="category-heading animate-on-scroll animate-slide-up">
+                     <h2>Experience our Room Suites Features and Benefits</h2>
+                 </div>
+                 <div class="room-list-grid">
+                     <!-- Room: Junior Suite Two Queen -->
+                     <div class="room-list-item animate-on-scroll animate-slide-up" style="transition-delay: 0.1s;">
+                         <a href="https://www.arthousehotelnyc.com/rooms/junior-suite-two-queens" target="_blank" rel="noopener noreferrer" class="room-list-item-image">
+                             <img src="https://image-tc.galaxy.tf/wijpeg-7r1y65esxeigdir76tf97kopu/eb-nylo-dd-big-2_standard.jpg?crop=106%2C0%2C1688%2C1266&width=600" alt="Junior Suite Two Queen">
+                         </a>
+                         <div class="room-list-item-content">
+                             <h3><a href="https://www.arthousehotelnyc.com/rooms/junior-suite-two-queens" target="_blank" rel="noopener noreferrer">Junior Suite Two Queen</a></h3>
+                             <p>Approx 450 sq ft, accommodating up to 4 persons. Luxury, feather free bedding, Pure bath amenities.</p>
+                             <div class="room-list-item-links">
+                                 <a href="https://www.arthousehotelnyc.com/rooms/junior-suite-two-queens" target="_blank" rel="noopener noreferrer">Read more</a>
+                                 <a href="https://www.arthousehotelnyc.com/rooms" target="_blank" rel="noopener noreferrer" class="book-link-room">Book Now</a>
+                             </div>
+                         </div>
+                     </div>
+                     <!-- Room: Junior Suite With Balcony -->
+                      <div class="room-list-item animate-on-scroll animate-slide-up" style="transition-delay: 0.2s;">
+                         <a href="https://www.arthousehotelnyc.com/rooms/junior-suite-with-balcony" target="_blank" rel="noopener noreferrer" class="room-list-item-image">
+                             <img src="https://image-tc.galaxy.tf/wijpeg-c5fudqt196ayul5omq775c3x5/jr-suite-living-rm-1401_standard.jpg?crop=100%2C0%2C1601%2C1201&width=600" alt="Jr Suite Living RM 1401">
+                         </a>
+                         <div class="room-list-item-content">
+                             <h3><a href="https://www.arthousehotelnyc.com/rooms/junior-suite-with-balcony" target="_blank" rel="noopener noreferrer">Junior Suite With Balcony</a></h3>
+                             <p>Approx 450 sq ft, king bed and sitting area. Spacious balcony with outdoor seating.</p>
+                             <div class="room-list-item-links">
+                                 <a href="https://www.arthousehotelnyc.com/rooms/junior-suite-with-balcony" target="_blank" rel="noopener noreferrer">Read more</a>
+                                 <a href="https://www.arthousehotelnyc.com/rooms" target="_blank" rel="noopener noreferrer" class="book-link-room">Book Now</a>
+                             </div>
+                         </div>
+                     </div>
+                     <!-- Room: NY Studio With Terrace -->
+                      <div class="room-list-item animate-on-scroll animate-slide-up" style="transition-delay: 0.3s;">
+                         <a href="https://www.arthousehotelnyc.com/rooms/ny-studio-with-terrace" target="_blank" rel="noopener noreferrer" class="room-list-item-image">
+                             <img src="https://image-tc.galaxy.tf/wijpeg-d24s7b3uk11v61ytdgkznzam0/ny-studio-with-terrace-pan-1502_standard.jpg?crop=100%2C0%2C1601%2C1201&width=600" alt="NY Studio With Terrace">
+                         </a>
+                         <div class="room-list-item-content">
+                             <h3><a href="https://www.arthousehotelnyc.com/rooms/ny-studio-with-terrace" target="_blank" rel="noopener noreferrer">NY Studio With Terrace</a></h3>
+                             <p>King size bed, 300 sq ft, private balcony. Located on floors 14 and 15.</p>
+                             <div class="room-list-item-links">
+                                 <a href="https://www.arthousehotelnyc.com/rooms/ny-studio-with-terrace" target="_blank" rel="noopener noreferrer">Read more</a>
+                                 <a href="https://www.arthousehotelnyc.com/rooms" target="_blank" rel="noopener noreferrer" class="book-link-room">Book Now</a>
+                             </div>
+                         </div>
+                     </div>
+                     <!-- Room: Loft With Terrace -->
+                      <div class="room-list-item animate-on-scroll animate-slide-up" style="transition-delay: 0.4s;">
+                         <a href="https://www.arthousehotelnyc.com/rooms/loft-with-terrace" target="_blank" rel="noopener noreferrer" class="room-list-item-image">
+                             <img src="https://image-tc.galaxy.tf/wijpeg-c3s2nj91917jnglcgbq92g8e4/loft-with-terrace-1503_standard.jpg?crop=100%2C0%2C1601%2C1201&width=600" alt="Loft with Terrace">
+                         </a>
+                         <div class="room-list-item-content">
+                             <h3><a href="https://www.arthousehotelnyc.com/rooms/loft-with-terrace" target="_blank" rel="noopener noreferrer">Loft With Terrace</a></h3>
+                             <p>Perfect for escapes or staycations. Approx 450 sq ft with private balcony.</p>
+                             <div class="room-list-item-links">
+                                 <a href="https://www.arthousehotelnyc.com/rooms/loft-with-terrace" target="_blank" rel="noopener noreferrer">Read more</a>
+                                 <a href="https://www.arthousehotelnyc.com/rooms" target="_blank" rel="noopener noreferrer" class="book-link-room">Book Now</a>
+                             </div>
+                         </div>
+                     </div>
+                     <!-- Room: Skyline Penthouse -->
+                      <div class="room-list-item animate-on-scroll animate-slide-up" style="transition-delay: 0.5s;">
+                         <a href="https://www.arthousehotelnyc.com/rooms/skyline-penthouse" target="_blank" rel="noopener noreferrer" class="room-list-item-image">
+                             <img src="https://image-tc.galaxy.tf/wijpeg-bnpy0sughvcnhj6gmsudu0x6g/penthouse-1602-bedroom_standard.jpg?crop=100%2C0%2C1601%2C1201&width=600" alt="Skyline Penthouse bedroom">
+                         </a>
+                         <div class="room-list-item-content">
+                             <h3><a href="https://www.arthousehotelnyc.com/rooms/skyline-penthouse" target="_blank" rel="noopener noreferrer">Skyline Penthouse</a></h3>
+                             <p>Approx 500 sq ft, king bed, private balcony. Sweeping Hudson River views.</p>
+                             <div class="room-list-item-links">
+                                 <a href="https://www.arthousehotelnyc.com/rooms/skyline-penthouse" target="_blank" rel="noopener noreferrer">Read more</a>
+                                 <a href="https://www.arthousehotelnyc.com/rooms" target="_blank" rel="noopener noreferrer" class="book-link-room">Book Now</a>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+
+             <!-- Category: Accessible Rooms -->
+             <div class="room-category">
+                 <div class="category-heading animate-on-scroll animate-slide-up">
+                     <h2>Rooms for Your Inclusive and Accessible Stays</h2>
+                 </div>
+                 <div class="room-list-grid">
+                     <!-- Room: Accessible Standard Queen -->
+                     <div class="room-list-item animate-on-scroll animate-slide-up" style="transition-delay: 0.1s;">
+                         <a href="https://www.arthousehotelnyc.com/rooms/accessible-standard-queen-with-grab-bars-and-tub" target="_blank" rel="noopener noreferrer" class="room-list-item-image">
+                             <img src="https://image-tc.galaxy.tf/wijpeg-93qfa5ht9quufqigleqmeq2lg/web-nylo-king-standard-3_standard.jpg?crop=67%2C0%2C1067%2C800&width=600" alt="Interior of Standard Queen">
+                         </a>
+                         <div class="room-list-item-content">
+                             <h3><a href="https://www.arthousehotelnyc.com/rooms/accessible-standard-queen-with-grab-bars-and-tub" target="_blank" rel="noopener noreferrer">Accessible Standard Queen W/ Grab Bars</a></h3>
+                             <p>Approx 240 sq ft. ADA compliant, tubs with grab bars, Mobility Accessible, low peep hole.</p>
+                             <div class="room-list-item-links">
+                                 <a href="https://www.arthousehotelnyc.com/rooms/accessible-standard-queen-with-grab-bars-and-tub" target="_blank" rel="noopener noreferrer">Read more</a>
+                                 <a href="https://www.arthousehotelnyc.com/rooms" target="_blank" rel="noopener noreferrer" class="book-link-room">Book Now</a>
+                             </div>
+                         </div>
+                     </div>
+                     <!-- Room: Accessible Deluxe Double -->
+                      <div class="room-list-item animate-on-scroll animate-slide-up" style="transition-delay: 0.2s;">
+                         <a href="https://www.arthousehotelnyc.com/rooms/accessible-deluxe-double-with-roll-in-shower" target="_blank" rel="noopener noreferrer" class="room-list-item-image">
+                             <img src="https://image-tc.galaxy.tf/wijpeg-9jfsutryywtl09tm5hnpm8rwj/arthouse-room-double-beds_standard.jpg?crop=226%2C0%2C1349%2C1012&width=600" alt="Beds in Deluxe Two Double">
+                         </a>
+                         <div class="room-list-item-content">
+                             <h3><a href="https://www.arthousehotelnyc.com/rooms/accessible-deluxe-double-with-roll-in-shower" target="_blank" rel="noopener noreferrer">Accessible Deluxe Double W/ Roll-In Shower</a></h3>
+                             <p>Approx 280 sq ft. ADA Compliant, Mobility Accessible, doorbell, low peep hole, roll in shower, grab bars, folding seat, strobe lights.</p>
+                             <div class="room-list-item-links">
+                                 <a href="https://www.arthousehotelnyc.com/rooms/accessible-deluxe-double-with-roll-in-shower" target="_blank" rel="noopener noreferrer">Read more</a>
+                                 <a href="https://www.arthousehotelnyc.com/rooms" target="_blank" rel="noopener noreferrer" class="book-link-room">Book Now</a>
+                             </div>
+                         </div>
+                     </div>
+                     <!-- Room: Accessible JR. Suite Two Queens -->
+                     <div class="room-list-item animate-on-scroll animate-slide-up" style="transition-delay: 0.3s;">
+                         <a href="https://www.arthousehotelnyc.com/rooms/accessible-jr-suite-two-queens-w-roll-in-shower" target="_blank" rel="noopener noreferrer" class="room-list-item-image">
+                             <img src="https://image-tc.galaxy.tf/wijpeg-3g8zar62ghl2etdgsxyjo2ivy/arthouse-suite-parlor_standard.jpg?crop=226%2C0%2C1349%2C1012&width=600" alt="Skyline Penthouse living area">
+                         </a>
+                         <div class="room-list-item-content">
+                             <h3><a href="https://www.arthousehotelnyc.com/rooms/accessible-jr-suite-two-queens-w-roll-in-shower" target="_blank" rel="noopener noreferrer">Accessible JR. Suite Two Queens W/ Roll-In Shower</a></h3>
+                             <p>450 sq ft. ADA Compliant, Mobility Accessible, low peep hole, roll in shower, grab bars, folding seat.</p>
+                             <div class="room-list-item-links">
+                                 <a href="https://www.arthousehotelnyc.com/rooms/accessible-jr-suite-two-queens-w-roll-in-shower" target="_blank" rel="noopener noreferrer">Read more</a>
+                                 <a href="https://www.arthousehotelnyc.com/rooms" target="_blank" rel="noopener noreferrer" class="book-link-room">Book Now</a>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+
+        </section>
+
+        <!-- Section 4: Minimal Booking Prompt -->
+        <section id="book-minimal" class="section-container">
+             <div class="animate-on-scroll animate-slide-up">
+                 <h2 class="font-display-1">Select Your Sanctuary</h2>
+                 <a href="https://reservations.travelclick.com/111046" target="_blank" rel="noopener noreferrer" class="btn-book mt-4">Check Availability</a>
+                 <p class="text-sm mt-6 text-gray-light">Or <a href="tel:+12123621100" class="underline hover:text-accent-neon">call us</a> directly.</p>
+             </div>
+        </section>
+
+    </main>
+
+    <!-- Minimal Footer -->
+    <footer class="site-footer-minimal">
+        <div class="footer-links">
+             <ul>
+               <li><a href="https://www.arthousehotelnyc.com/faq" target="_blank" rel="noopener noreferrer">FAQ</a></li>
+               <li><a href="https://www.arthousehotelnyc.com/terms" target="_blank" rel="noopener noreferrer">Terms & Conditions</a></li>
+               <li><a href="https://www.arthousehotelnyc.com/policies" target="_blank" rel="noopener noreferrer">Privacy Policies</a></li>
+               <li><a href="https://www.arthousehotelnyc.com/accessibility" target="_blank" rel="noopener noreferrer">Accessibility</a></li>
+               <li><a href="https://www.arthousehotelnyc.com/sign-up" target="_blank" rel="noopener noreferrer">Newsletter</a></li>
+               <li><a href="https://www.arthousehotelnyc.com/contact" target="_blank" rel="noopener noreferrer">Contact</a></li>
+               <li><a href="https://www.arthousehotelnyc.com/gallery" target="_blank" rel="noopener noreferrer">Gallery</a></li>
+               <li><a href="https://www.arthousehotelnyc.com/explore" target="_blank" rel="noopener noreferrer">Neighborhood</a></li>
+            </ul>
+        </div>
+        <div class="social-links-footer">
+             <a href="https://www.facebook.com/arthousehotelnyc/" target="_blank" rel="noopener noreferrer" aria-label="Facebook"> <svg fill="currentColor" viewBox="0 0 24 24"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v2.385z"/></svg> </a>
+             <a href="https://www.tripadvisor.com/Hotel_Review-g60763-d99288-Reviews-Arthouse_Hotel_New_York_City-New_York_City_New_York.html" target="_blank" rel="noopener noreferrer" aria-label="Tripadvisor"> <svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .5C5.649.5.5 5.649.5 12S5.649 23.5 12 23.5 23.5 18.351 23.5 12 18.351.5 12 .5zm0 17.125c-1.903 0-3.444-1.541-3.444-3.444s1.541-3.444 3.444-3.444 3.444 1.541 3.444 3.444-1.54 3.444-3.444 3.444zm5.611-8.236c-1.19 0-2.161-.97-2.161-2.161 0-1.191.971-2.161 2.161-2.161 1.191 0 2.161.97 2.161 2.161 0 1.191-.97 2.161-2.161 2.161zm-11.222 0c-1.19 0-2.161-.97-2.161-2.161 0-1.191.971-2.161 2.161-2.161 1.191 0 2.161.97 2.161 2.161 0 1.191-.97 2.161-2.161 2.161z"/></svg> </a>
+             <a href="https://www.instagram.com/arthousehotelnyc" target="_blank" rel="noopener noreferrer" aria-label="Instagram"> <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.148 3.227-1.667 4.77-4.919 4.918-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-3.25-.148-4.77-1.69-4.918-4.918-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.148-3.227 1.668-4.77 4.918-4.919 1.266-.058 1.646-.07 4.85-.07zm0-2.163c-3.259 0-3.667.015-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.057 1.28-.072 1.688-.072 4.947s.015 3.667.072 4.947c.2 4.358 2.618 6.78 6.98 6.98 1.28.057 1.688.072 4.947.072s3.667-.015 4.947-.072c4.358-.2 6.78-2.618 6.98-6.98.057-1.28.072-1.688.072-4.947s-.015-3.667-.072-4.947c-.2-4.358-2.618-6.78-6.98-6.98-1.28-.057-1.688-.072-4.947-.072zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.162 6.162 6.162 6.162-2.759 6.162-6.162-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.791-4-4s1.791-4 4-4 4 1.791 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg> </a>
+        </div>
+        <div class="copyright">
+            Arthouse Hotel New York City | 2178 Broadway at W 77th Street New York, NY 10024 <br>
+            © <span id="currentYear"></span> Arthouse Hotel NYC. All Rights Reserved.
+        </div>
+         <div class="designed-by">
+             Site Design Inspired by Experimental Concepts | Original Platform by <a href="https://www.travelclick.com/" target="_blank" rel="noopener noreferrer">TravelClick</a>
+         </div>
+    </footer>
+
+    <script>
+        // --- Cookie Banner Logic ---
+        const cookieBanner = document.getElementById('cookie-banner');
+        const acceptCookiesBtn = document.getElementById('accept-cookies');
+        if (localStorage.getItem('cookiesAccepted') === 'true') { cookieBanner.classList.add('hidden'); }
+        acceptCookiesBtn.addEventListener('click', () => { cookieBanner.classList.add('hidden'); localStorage.setItem('cookiesAccepted', 'true'); });
+
+        // --- Intersection Observer for Animations ---
+        const sections = document.querySelectorAll('.section-container');
+        const observerOptions = { root: null, rootMargin: '0px', threshold: 0.15 };
+        const sectionObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.querySelectorAll('.animate-on-scroll').forEach(el => el.classList.add('is-visible'));
+                }
+            });
+        }, observerOptions);
+        sections.forEach(section => sectionObserver.observe(section));
+
+        // --- Menu Overlay Logic ---
+        const menuTrigger = document.getElementById('menu-trigger');
+        const menuOverlay = document.getElementById('menu-overlay');
+        const closeMenuBtn = document.getElementById('close-menu');
+        const menuLinks = menuOverlay.querySelectorAll('nav a');
+        const body = document.body;
+        function openMenu() { menuOverlay.classList.add('active'); body.classList.add('menu-open'); }
+        function closeMenu() { menuOverlay.classList.remove('active'); body.classList.remove('menu-open'); }
+        menuTrigger.addEventListener('click', openMenu);
+        closeMenuBtn.addEventListener('click', closeMenu);
+        menuLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                const href = link.getAttribute('href');
+                closeMenu();
+                if (href && href.startsWith('#')) {
+                     e.preventDefault();
+                     const targetElement = document.querySelector(href);
+                     if (targetElement) { setTimeout(() => { targetElement.scrollIntoView({ behavior: 'smooth' }); }, 100); }
+                }
+            });
+        });
+
+        // --- Current Year ---
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+    </script>
+
+</body>
+</html>

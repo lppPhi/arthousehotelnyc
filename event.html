@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARTHOUSE NYC ::: EVENTS ::: DECONSTRUCTED</title> <!-- Title cập nhật -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;700;900&family=Playfair+Display:wght@800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Palette: High Contrast & Neon */
+            --bg-main: #000000;
+            --text-main: #ffffff;
+            --accent-neon: #FF33FF; /* Neon Pink/Magenta */
+            --gray-muted: #555555;
+            --gray-light: #cccccc;
+            --gray-dark: #222222; /* Darker gray for subtle backgrounds */
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', sans-serif; background-color: var(--bg-main);
+            color: var(--text-main); overflow-x: hidden;
+            font-weight: 300; line-height: 1.6;
+        }
+        body.menu-open { overflow: hidden; }
+
+        /* --- Typography --- */
+        h1, h2, h3, .font-display-1 {
+            font-family: 'Anton', sans-serif; text-transform: uppercase;
+            line-height: 0.9; color: var(--text-main);
+            margin-bottom: 1rem; letter-spacing: 0.01em;
+        }
+        .font-display-2 {
+             font-family: 'Playfair Display', serif; font-weight: 800;
+             line-height: 1.1; color: var(--text-main);
+        }
+        a { color: inherit; text-decoration: none; }
+        a:hover { color: var(--accent-neon); }
+
+        /* --- Header (Minimal Trigger) --- */
+        #main-header { position: fixed; top: 20px; left: 20px; z-index: 1001; }
+        #menu-trigger { display: block; cursor: pointer; padding: 5px; transition: transform 0.3s ease; }
+        #menu-trigger img { display: block; height: 2.5rem; filter: brightness(0) invert(1); transition: opacity 0.3s ease; }
+        #menu-trigger:hover img { opacity: 0.8; }
+        #menu-trigger:active { transform: scale(0.95); }
+
+        /* --- Fullscreen Menu Overlay --- */
+        #menu-overlay { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.98); color: var(--text-main); z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.4s ease-in-out, visibility 0s linear 0.4s; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; }
+        #menu-overlay.active { opacity: 1; visibility: visible; transition: opacity 0.4s ease-in-out, visibility 0s linear 0s; }
+        #menu-overlay nav { display: flex; flex-direction: column; gap: 1.5rem; }
+        #menu-overlay nav a { font-family: 'Anton', sans-serif; font-size: clamp(2rem, 6vw, 4rem); text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-main); text-decoration: none; position: relative; transition: color 0.3s ease, transform 0.3s ease; padding: 0.5rem 0; }
+        #menu-overlay nav a:hover { color: var(--accent-neon); transform: scale(1.05); }
+        #menu-overlay .menu-book-now a { margin-top: 2rem; font-size: clamp(1.5rem, 4vw, 2.5rem); color: var(--bg-main); background-color: var(--accent-neon); padding: 1rem 2.5rem; transition: background-color 0.3s ease, color 0.3s ease; }
+        #menu-overlay .menu-book-now a:hover { background-color: var(--text-main); color: var(--bg-main); transform: scale(1.03); }
+        #close-menu { position: absolute; top: 30px; right: 30px; background: none; border: none; cursor: pointer; padding: 10px; }
+        #close-menu svg { width: 30px; height: 30px; stroke: var(--text-main); transition: stroke 0.3s ease, transform 0.3s ease; }
+        #close-menu:hover svg { stroke: var(--accent-neon); transform: rotate(90deg); }
+
+        /* --- Scroll Animations --- */
+        .section-container { min-height: 80vh; position: relative; overflow: hidden; padding: 15vh 5vw; border-bottom: 1px dashed var(--gray-muted); scroll-margin-top: 50px; }
+        .section-container:last-of-type { border-bottom: none; }
+        .animate-on-scroll { opacity: 0; transition: opacity 1s ease-out, transform 1s ease-out; }
+        .animate-slide-up { transform: translateY(100px); }
+        .animate-slide-left { transform: translateX(100px); }
+        .animate-slide-right { transform: translateX(-100px); }
+        .animate-scale-down { transform: scale(1.2); }
+        .is-visible { opacity: 1; transform: translate(0, 0) scale(1); }
+
+        /* --- Minimalist Button Style --- */
+        .btn-minimal { display: inline-block; padding: 0.75rem 1.5rem; border: 1px solid var(--accent-neon); color: var(--accent-neon); font-family: 'Inter', sans-serif; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; transition: background-color 0.3s ease, color 0.3s ease; text-align: center; }
+        .btn-minimal:hover { background-color: var(--accent-neon); color: var(--bg-main); }
+        .btn-book { font-family: 'Anton', sans-serif; font-size: 1.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--bg-main); background-color: var(--accent-neon); padding: 1rem 3rem; transition: background-color 0.3s ease, color 0.3s ease, letter-spacing 0.3s ease; border: none; display: inline-block; text-align: center; cursor: pointer; }
+        .btn-book:hover { background-color: var(--text-main); color: var(--bg-main); letter-spacing: 0.15em; }
+        /* Button for RFP */
+        .btn-rfp { /* Giống btn-book nhưng có thể khác text/size */
+            font-family: 'Anton', sans-serif; font-size: 1.6rem; text-transform: uppercase; letter-spacing: 0.1em;
+            color: var(--bg-main); background-color: var(--accent-neon); padding: 1rem 2.5rem;
+            transition: background-color 0.3s ease, color 0.3s ease, letter-spacing 0.3s ease;
+            border: none; display: inline-block; text-align: center; cursor: pointer;
+        }
+         .btn-rfp:hover { background-color: var(--text-main); color: var(--bg-main); letter-spacing: 0.15em; }
+
+
+        /* --- CONTENT STYLING --- */
+
+        /* Cookie Banner */
+        #cookie-banner { position: fixed; bottom: 0; left: 0; width: 100%; background-color: var(--bg-main); color: var(--gray-light); padding: 1rem 2rem; z-index: 2000; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; border-top: 1px solid var(--gray-muted); opacity: 1; transition: opacity 0.5s ease; }
+        #cookie-banner.hidden { opacity: 0; pointer-events: none; }
+        #cookie-banner p { margin: 0; } #cookie-banner a { color: var(--accent-neon); text-decoration: underline; }
+        #cookie-banner button { background: var(--accent-neon); color: var(--bg-main); border: none; padding: 0.5rem 1rem; font-size: 0.8rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; }
+
+        /* Skip Link */
+        .skip-link { position: absolute; top: -40px; left: 0; background: var(--accent-neon); color: var(--bg-main); padding: 8px; z-index: 3000; transition: top 0.3s ease-in-out; }
+        .skip-link:focus { top: 0; }
+
+        /* --- Hero Section (for Events Page) --- */
+        #hero-events { /* ID mới */
+            padding: 0; border-bottom: none; display: flex; align-items: center;
+            justify-content: center; text-align: center; min-height: 70vh;
+            position: relative; overflow: hidden;
+        }
+        #hero-events .hero-background-image { position: absolute; inset: 0; z-index: 0; }
+        #hero-events .hero-background-image img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(70%) contrast(100%) brightness(0.7); opacity: 0.6; } /* Filter khác */
+        #hero-events::after { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.4); z-index: 1; }
+        #hero-events .hero-content-main { position: relative; z-index: 2; max-width: 90%; padding: 5vh 5vw; }
+        #hero-events .hero-heading { font-size: clamp(4rem, 13vw, 10rem); margin-bottom: 1rem; line-height: 0.8; }
+        #hero-events .hero-subheading { font-size: clamp(1.1rem, 3vw, 1.7rem); font-family: 'Inter', sans-serif; font-weight: 300; color: var(--gray-light); max-width: 800px; margin: 0 auto; letter-spacing: 0.05em; }
+
+        /* --- Venues Section --- */
+        #venues { padding: 10vh 5vw; }
+        .venues-intro { text-align: center; max-width: 800px; margin: 0 auto 5rem auto; }
+        .venues-intro h2 { font-size: clamp(2.5rem, 6vw, 5rem); color: var(--text-main); margin-bottom: 1.5rem; }
+        .venues-intro p { font-size: 1rem; color: var(--gray-light); line-height: 1.7; }
+        .venues-intro strong { color: var(--accent-neon); font-weight: 700; } /* Highlight tên */
+
+        /* --- Venues Grid --- */
+        .venues-grid {
+            display: grid;
+            /* Grid 2 cột cân bằng hơn */
+            grid-template-columns: repeat(auto-fit, minmax(min(350px, 100%), 1fr));
+            gap: 3rem;
+        }
+        .venue-item {
+            border: 1px solid var(--gray-muted);
+            background-color: var(--gray-dark); /* Nền tối nhẹ */
+            position: relative;
+            display: flex; flex-direction: column;
+            transition: border-color 0.3s ease, background-color 0.3s ease;
+            text-align: center; /* Căn giữa nội dung */
+        }
+        .venue-item:hover { border-color: var(--accent-neon); background-color: #111; }
+        .venue-image-link { display: block; position: relative; overflow: hidden; }
+        .venue-image-link img {
+             display: block; width: 100%; height: 300px; /* Chiều cao cố định */
+             object-fit: cover; filter: grayscale(10%);
+             transition: transform 0.5s ease, filter 0.5s ease;
+        }
+        .venue-item:hover .venue-image-link img { transform: scale(1.03); filter: grayscale(0%); }
+
+        .venue-content { padding: 2rem 1.5rem; flex-grow: 1; display: flex; flex-direction: column; }
+        .venue-content h3 { /* Tên venue là link */
+            font-family: 'Anton', sans-serif; font-size: 2rem; text-transform: uppercase; letter-spacing: 0.05em;
+            color: var(--text-main); margin-bottom: 1rem; line-height: 1;
+        }
+        .venue-content h3 a:hover { color: var(--accent-neon); }
+        .venue-content p { font-size: 0.95rem; color: var(--gray-light); margin-bottom: 1.5rem; flex-grow: 1; }
+        .venue-read-more {
+             display: inline-block; margin-top: auto; font-size: 0.8rem; font-weight: 700;
+             color: var(--accent-neon); text-transform: uppercase; letter-spacing: 0.1em;
+             border-bottom: 1px solid transparent;
+        }
+        .venue-read-more:hover { border-bottom-color: var(--accent-neon); }
+
+        /* --- Virtual Tour Section --- */
+        #virtual-tour { padding: 10vh 5vw; text-align: center; background-color: var(--gray-dark); }
+        #virtual-tour h2 { font-size: clamp(2.5rem, 6vw, 4.5rem); margin-bottom: 2rem; }
+        /* Tạm thời chỉ hiển thị link, cần iframe nếu có link nhúng */
+        #virtual-tour .virtual-tour-placeholder {
+            border: 2px dashed var(--gray-muted); padding: 4rem 2rem;
+            max-width: 700px; margin: 0 auto; color: var(--gray-light);
+        }
+        #virtual-tour .virtual-tour-placeholder p { margin-bottom: 1.5rem; }
+        #virtual-tour .virtual-tour-placeholder a { color: var(--accent-neon); font-weight: bold; text-decoration: underline; }
+
+
+        /* --- RFP / Call to Action --- */
+        #event-cta { padding: 15vh 5vw; text-align: center; }
+        #event-cta h2 { font-size: clamp(2.5rem, 6vw, 4rem); margin-bottom: 2rem; }
+        #event-cta p { max-width: 600px; margin: 0 auto 3rem auto; color: var(--gray-light); }
+
+        /* --- Footer --- */
+        .site-footer-minimal { text-align: center; padding: 3rem 1rem 2rem; font-size: 0.8rem; color: var(--gray-muted); letter-spacing: 0.05em; border-top: 1px solid #222; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
+        .footer-links ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem 2rem; }
+        .footer-links a { color: var(--gray-muted); } .footer-links a:hover { color: var(--accent-neon); }
+        .social-links-footer a { margin: 0 0.75rem; }
+        .social-links-footer svg { width: 18px; height: 18px; fill: var(--gray-muted); transition: fill 0.3s ease; }
+        .social-links-footer a:hover svg { fill: var(--accent-neon); }
+        .copyright { font-size: 0.75rem; }
+        .designed-by { font-size: 0.7rem; opacity: 0.6; }
+        .designed-by a { text-decoration: underline; }
+
+    </style>
+</head>
+<body>
+
+    <!-- Cookie Banner -->
+    <div id="cookie-banner">
+        <p>By using our website you are consenting to our use of cookies in accordance with our Cookie Policy. <a href="https://www.arthousehotelnyc.com/policies" target="_blank" rel="noopener noreferrer">Read More</a></p>
+        <button id="accept-cookies">Accept</button>
+    </div>
+
+    <!-- Skip Link -->
+    <a href="#site-content" class="skip-link">Skip to main content</a>
+
+    <!-- Minimal Header Trigger -->
+    <header id="main-header">
+        <a id="menu-trigger" title="Open Menu">
+            <img src="https://image-tc.galaxy.tf/wisvg-43nint0xjmzt82r0l2lzhzy67/arthouse-hotel-logo-white-transparent-background.svg?width=200" alt="Arthouse Hotel NYC Logo">
+        </a>
+    </header>
+
+    <!-- Fullscreen Menu Overlay -->
+    <div id="menu-overlay">
+        <button id="close-menu" aria-label="Close Menu">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+        <nav>
+             <!-- Links cập nhật cho trang Events -->
+             <a href="room.html" title="View Rooms">Rooms</a>
+             <a href="offers.html" title="View Offers">Offers</a>
+             <a href="arthouse.html" title="Arthouse Bar">Arthouse Bar</a>
+             <a href="live.html" title="Live @ AH">Live @ AH</a>
+             <a href="dining.html" title="View Dining">Dining</a>
+             <a href="event.html" title="View Events">Events</a> <!-- Link nội bộ -->
+             <a href="https://www.arthousehotelnyc.com/explore" target="_blank" rel="noopener noreferrer">Neighborhood</a>
+             <a href="https://www.arthousehotelnyc.com/gallery" target="_blank" rel="noopener noreferrer">Gallery</a>
+             <a href="https://www.arthousehotelnyc.com/contact" target="_blank" rel="noopener noreferrer">Contact</a>
+            <div class="menu-book-now">
+                 <!-- Link tới form RFP -->
+                <a href="https://www.arthousehotelnyc.com/meetings-and-events/rfp-form" target="_blank" rel="noopener noreferrer">Book Event</a>
+            </div>
+        </nav>
+    </div>
+
+    <main id="site-content">
+
+        <!-- Section 1: Hero for Events Page -->
+        <section id="hero-events" class="section-container">
+            <div class="hero-background-image">
+                 <!-- Chọn một ảnh phù hợp, ví dụ ảnh Terrace hoặc Lobby -->
+                 <img src="https://image-tc.galaxy.tf/wijpeg-467oc3d61j06vglw50uueogvj/arthouse-rooftop-city-view_standard.jpg?crop=101%2C0%2C1599%2C1199&width=1920" alt="Arthouse Hotel Event Space View" />
+            </div>
+            <div class="hero-content-main">
+                <h1 class="hero-heading animate-on-scroll animate-scale-down">Events</h1>
+                <p class="hero-subheading animate-on-scroll animate-slide-up" style="transition-delay: 0.2s;">
+                   Host Your Event in Vibrant Venues on NYC's Upper West Side
+                </p>
+            </div>
+        </section>
+
+        <!-- Section 2: Venues Introduction & Grid -->
+        <section id="venues" class="section-container">
+             <div class="venues-intro animate-on-scroll animate-slide-up">
+                 <h2>Our Meeting Spaces</h2>
+                 <p class="mb-4">
+                    Our Vibrant venues at Arthouse Hotel New York color every occasion. Fit for intimate gatherings, outdoor celebrations, casual meetings, and social events our unique spaces are the perfect canvas for your next soiree. Allow us to craft a creative experience with curated catering - featuring Abigail Kirsch - and custom cocktails born in our own Arthouse Bar that will leave a lasting impression.
+                 </p>
+                 <p>
+                     The spectacular <strong>77th Street Terrace</strong> boasts 2,200 sq ft with Hudson River views. The <strong>Park Terrace</strong> offers intimate events with glimpses of Central Park. The <strong>Library</strong> and <strong>Piano Lounge</strong> provide cozy lobby settings with original art and historic charm.
+                 </p>
+             </div>
+
+             <div class="venues-grid">
+                 <!-- Venue 1: Library -->
+                 <div class="venue-item animate-on-scroll animate-slide-up" style="transition-delay: 0.1s;">
+                     <a href="https://www.arthousehotelnyc.com/meetings-and-events/library" class="venue-image-link" target="_blank" rel="noopener noreferrer">
+                         <img src="https://image-tc.galaxy.tf/wijpeg-dp5bj6f8s2heirkknpykyriud/arthouse-lobby-1-sm_standard.jpg?crop=100%2C0%2C1601%2C1201&width=600" alt="Arthouse Hotel Library">
+                     </a>
+                     <div class="venue-content">
+                         <h3><a href="https://www.arthousehotelnyc.com/meetings-and-events/library" target="_blank" rel="noopener noreferrer">Library</a></h3>
+                         <p>The perfect intimate hideaway for functions up to 50 guests.</p>
+                         <a href="https://www.arthousehotelnyc.com/meetings-and-events/library" class="venue-read-more" target="_blank" rel="noopener noreferrer">Read more</a>
+                     </div>
+                 </div>
+
+                 <!-- Venue 2: The Lounge -->
+                 <div class="venue-item animate-on-scroll animate-slide-up" style="transition-delay: 0.2s;">
+                     <a href="https://www.arthousehotelnyc.com/meetings-and-events/piano-lounge" class="venue-image-link" target="_blank" rel="noopener noreferrer">
+                         <img src="https://image-tc.galaxy.tf/wijpeg-a4a8m9oohld5id7unq9kvj2ce/arthouse-alcove-seating-sm_standard.jpg?crop=100%2C0%2C1601%2C1201&width=600" alt="Arthouse Hotel Lounge Seating">
+                     </a>
+                     <div class="venue-content">
+                         <h3><a href="https://www.arthousehotelnyc.com/meetings-and-events/piano-lounge" target="_blank" rel="noopener noreferrer">The Lounge</a></h3>
+                         <p>Plush living room ambiance, perfect for small soiree's up to 40 guests.</p>
+                         <a href="https://www.arthousehotelnyc.com/meetings-and-events/piano-lounge" class="venue-read-more" target="_blank" rel="noopener noreferrer">Read more</a>
+                     </div>
+                 </div>
+
+                 <!-- Venue 3: Terrace -->
+                 <div class="venue-item animate-on-scroll animate-slide-up" style="transition-delay: 0.3s;">
+                     <a href="https://www.arthousehotelnyc.com/meetings-and-events/rooftop" class="venue-image-link" target="_blank" rel="noopener noreferrer">
+                         <img src="https://image-tc.galaxy.tf/wijpeg-467oc3d61j06vglw50uueogvj/arthouse-rooftop-city-view_standard.jpg?crop=101%2C0%2C1599%2C1199&width=600" alt="Arthouse Hotel Rooftop Terrace View">
+                     </a>
+                     <div class="venue-content">
+                         <h3><a href="https://www.arthousehotelnyc.com/meetings-and-events/rooftop" target="_blank" rel="noopener noreferrer">Terrace</a></h3>
+                         <p>Sweeping UWS and Central Park views from our 16th floor private terrace (up to 30 guests).</p>
+                         <a href="https://www.arthousehotelnyc.com/meetings-and-events/rooftop" class="venue-read-more" target="_blank" rel="noopener noreferrer">Read more</a>
+                     </div>
+                 </div>
+
+                 <!-- Venue 4: 14th floor Balcony -->
+                  <div class="venue-item animate-on-scroll animate-slide-up" style="transition-delay: 0.4s;">
+                     <a href="https://www.arthousehotelnyc.com/meetings-and-events/loft-suite-1405-balcony" class="venue-image-link" target="_blank" rel="noopener noreferrer">
+                         <img src="https://image-tc.galaxy.tf/wijpeg-7qei8pmttlj268fmbv48fdxnt/arthousehotel-20210615-015_standard.jpg?crop=112%2C0%2C1777%2C1333&width=600" alt="Arthouse Hotel 14th floor Balcony">
+                     </a>
+                     <div class="venue-content">
+                         <h3><a href="https://www.arthousehotelnyc.com/meetings-and-events/loft-suite-1405-balcony" target="_blank" rel="noopener noreferrer">14th floor Balcony</a></h3>
+                         <p>Reserve Loft Suite 1405 for access to a 300-sq-ft private balcony (up to 20 guests).</p>
+                         <a href="https://www.arthousehotelnyc.com/meetings-and-events/loft-suite-1405-balcony" class="venue-read-more" target="_blank" rel="noopener noreferrer">Read more</a>
+                     </div>
+                 </div>
+
+                 <!-- Venue 5: Weddings -->
+                 <div class="venue-item animate-on-scroll animate-slide-up" style="transition-delay: 0.5s;">
+                     <a href="https://www.arthousehotelnyc.com/meetings-and-events/weddings" class="venue-image-link" target="_blank" rel="noopener noreferrer">
+                         <img src="https://image-tc.galaxy.tf/wijpeg-4wy2rphuw13cuth8a7427vaek/adobestock-104296596_standard.jpg?crop=100%2C0%2C1600%2C1200&width=600" alt="Lady creating a flower bouquet">
+                     </a>
+                     <div class="venue-content">
+                         <h3><a href="https://www.arthousehotelnyc.com/meetings-and-events/weddings" target="_blank" rel="noopener noreferrer">Weddings</a></h3>
+                         <p>Congratulations! It's time to celebrate your special day in style.</p>
+                         <a href="https://www.arthousehotelnyc.com/meetings-and-events/weddings" class="venue-read-more" target="_blank" rel="noopener noreferrer">Read more</a>
+                     </div>
+                 </div>
+
+                 <!-- Venue 6: Bar/Bat Mitzvahs -->
+                 <div class="venue-item animate-on-scroll animate-slide-up" style="transition-delay: 0.6s;">
+                     <a href="https://www.arthousehotelnyc.com/meetings-and-events/bar-bat-mitzvahs" class="venue-image-link" target="_blank" rel="noopener noreferrer">
+                         <img src="https://image-tc.galaxy.tf/wijpeg-75fnr6609pefmo0ruexi5zb8/arthousehotel-20210615-004_standard.jpg?crop=112%2C0%2C1777%2C1333&width=600" alt="Arthouse Hotel detail shot">
+                     </a>
+                     <div class="venue-content">
+                         <h3><a href="https://www.arthousehotelnyc.com/meetings-and-events/bar-bat-mitzvahs" target="_blank" rel="noopener noreferrer">Bar/Bat Mitzvahs</a></h3>
+                         <p>Arthouse Hotel New York City is proud to be a part of the UWS Jewish community.</p>
+                         <a href="https://www.arthousehotelnyc.com/meetings-and-events/bar-bat-mitzvahs" class="venue-read-more" target="_blank" rel="noopener noreferrer">Read more</a>
+                     </div>
+                 </div>
+
+                 <!-- Venue 7: Serafina Private Dining -->
+                 <div class="venue-item animate-on-scroll animate-slide-up" style="transition-delay: 0.7s;">
+                     <a href="https://www.arthousehotelnyc.com/meetings-and-events/serafina-private-dining-room" class="venue-image-link" target="_blank" rel="noopener noreferrer">
+                         <img src="https://image-tc.galaxy.tf/wijpeg-5a2vs9voo3n53mg80e4jr5lxg/serafina-restaurant-dining-room_standard.jpg?crop=132%2C0%2C1537%2C1153&width=600" alt="Serafina Restaurant Dining Room">
+                     </a>
+                     <div class="venue-content">
+                         <h3><a href="https://www.arthousehotelnyc.com/meetings-and-events/serafina-private-dining-room" target="_blank" rel="noopener noreferrer">Serafina Private Dining</a></h3>
+                         <p>“The Room” is an exclusively private space with independent sound/TV (up to 40 guests).</p>
+                         <a href="https://www.arthousehotelnyc.com/meetings-and-events/serafina-private-dining-room" class="venue-read-more" target="_blank" rel="noopener noreferrer">Read more</a>
+                     </div>
+                 </div>
+
+             </div> <!-- End .venues-grid -->
+        </section>
+
+        <!-- Section 3: Virtual Tour -->
+         <section id="virtual-tour" class="section-container">
+             <div class="animate-on-scroll animate-slide-up">
+                 <h2 class="font-display-1">Virtual Tour</h2>
+                 <div class="virtual-tour-placeholder">
+                     <p>Explore our unique event spaces from anywhere.</p>
+                     <!-- Placeholder link - Thay thế bằng link virtual tour thực tế nếu có -->
+                     <a href="https://www.arthousehotelnyc.com/meetings-and-events#virtual-tour-callout" target="_blank" rel="noopener noreferrer" class="btn-minimal">Take the Tour</a>
+                     <!-- Hoặc nhúng iframe nếu có mã nhúng -->
+                     <!-- <iframe src="YOUR_VIRTUAL_TOUR_URL" width="100%" height="500" style="border:0;" allowfullscreen="" loading="lazy"></iframe> -->
+                 </div>
+             </div>
+         </section>
+
+        <!-- Section 4: Event CTA / RFP -->
+        <section id="event-cta" class="section-container">
+             <div class="animate-on-scroll animate-slide-up">
+                 <h2 class="font-display-1">Plan Your Perfect Event</h2>
+                 <p>Ready to start planning? Submit your event details, and our team will be in touch to craft an unforgettable experience.</p>
+                 <a href="https://www.arthousehotelnyc.com/meetings-and-events/rfp-form" target="_blank" rel="noopener noreferrer" class="btn-rfp mt-4">Request Proposal</a>
+                  <p class="text-sm mt-6 text-gray-light">Or <a href="tel:+12123621100" class="underline hover:text-accent-neon">call our events team</a> directly.</p>
+             </div>
+        </section>
+
+    </main>
+
+    <!-- Minimal Footer -->
+    <footer class="site-footer-minimal">
+        <div class="footer-links">
+             <ul>
+               <li><a href="https://www.arthousehotelnyc.com/faq" target="_blank" rel="noopener noreferrer">FAQ</a></li>
+               <li><a href="https://www.arthousehotelnyc.com/terms" target="_blank" rel="noopener noreferrer">Terms & Conditions</a></li>
+               <li><a href="https://www.arthousehotelnyc.com/policies" target="_blank" rel="noopener noreferrer">Privacy Policies</a></li>
+               <li><a href="https://www.arthousehotelnyc.com/accessibility" target="_blank" rel="noopener noreferrer">Accessibility</a></li>
+               <li><a href="https://www.arthousehotelnyc.com/sign-up" target="_blank" rel="noopener noreferrer">Newsletter</a></li>
+               <li><a href="https://www.arthousehotelnyc.com/contact" target="_blank" rel="noopener noreferrer">Contact</a></li>
+               <li><a href="https://www.arthousehotelnyc.com/gallery" target="_blank" rel="noopener noreferrer">Gallery</a></li>
+               <li><a href="https://www.arthousehotelnyc.com/explore" target="_blank" rel="noopener noreferrer">Neighborhood</a></li>
+            </ul>
+        </div>
+        <div class="social-links-footer">
+             <a href="https://www.facebook.com/arthousehotelnyc/" target="_blank" rel="noopener noreferrer" aria-label="Facebook"> <svg fill="currentColor" viewBox="0 0 24 24"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v2.385z"/></svg> </a>
+             <a href="https://www.tripadvisor.com/Hotel_Review-g60763-d99288-Reviews-Arthouse_Hotel_New_York_City-New_York_City_New_York.html" target="_blank" rel="noopener noreferrer" aria-label="Tripadvisor"> <svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .5C5.649.5.5 5.649.5 12S5.649 23.5 12 23.5 23.5 18.351 23.5 12 18.351.5 12 .5zm0 17.125c-1.903 0-3.444-1.541-3.444-3.444s1.541-3.444 3.444-3.444 3.444 1.541 3.444 3.444-1.54 3.444-3.444 3.444zm5.611-8.236c-1.19 0-2.161-.97-2.161-2.161 0-1.191.971-2.161 2.161-2.161 1.191 0 2.161.97 2.161 2.161 0 1.191-.97 2.161-2.161 2.161zm-11.222 0c-1.19 0-2.161-.97-2.161-2.161 0-1.191.971-2.161 2.161-2.161 1.191 0 2.161.97 2.161 2.161 0 1.191-.97 2.161-2.161 2.161z"/></svg> </a>
+             <a href="https://www.instagram.com/arthousehotelnyc" target="_blank" rel="noopener noreferrer" aria-label="Instagram"> <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.148 3.227-1.667 4.77-4.919 4.918-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-3.25-.148-4.77-1.69-4.918-4.918-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.148-3.227 1.668-4.77 4.918-4.919 1.266-.058 1.646-.07 4.85-.07zm0-2.163c-3.259 0-3.667.015-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.057 1.28-.072 1.688-.072 4.947s.015 3.667.072 4.947c.2 4.358 2.618 6.78 6.98 6.98 1.28.057 1.688.072 4.947.072s3.667-.015 4.947-.072c4.358-.2 6.78-2.618 6.98-6.98.057-1.28.072-1.688.072-4.947s-.015-3.667-.072-4.947c-.2-4.358-2.618-6.78-6.98-6.98-1.28-.057-1.688-.072-4.947-.072zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.162 6.162 6.162 6.162-2.759 6.162-6.162-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.791-4-4s1.791-4 4-4 4 1.791 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg> </a>
+        </div>
+        <div class="copyright">
+            Arthouse Hotel New York City | 2178 Broadway at W 77th Street New York, NY 10024 <br>
+            © <span id="currentYear"></span> Arthouse Hotel NYC. All Rights Reserved.
+        </div>
+         <div class="designed-by">
+             Site Design Inspired by Experimental Concepts | Original Platform by <a href="https://www.travelclick.com/" target="_blank" rel="noopener noreferrer">TravelClick</a>
+         </div>
+    </footer>
+
+    <script>
+        // --- Cookie Banner Logic ---
+        const cookieBanner = document.getElementById('cookie-banner');
+        const acceptCookiesBtn = document.getElementById('accept-cookies');
+        if (localStorage.getItem('cookiesAccepted') === 'true') { cookieBanner.classList.add('hidden'); }
+        acceptCookiesBtn.addEventListener('click', () => { cookieBanner.classList.add('hidden'); localStorage.setItem('cookiesAccepted', 'true'); });
+
+        // --- Intersection Observer for Animations ---
+        const sections = document.querySelectorAll('.section-container');
+        const observerOptions = { root: null, rootMargin: '0px', threshold: 0.15 };
+        const sectionObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.querySelectorAll('.animate-on-scroll').forEach(el => el.classList.add('is-visible'));
+                }
+            });
+        }, observerOptions);
+        sections.forEach(section => sectionObserver.observe(section));
+
+        // --- Menu Overlay Logic ---
+        const menuTrigger = document.getElementById('menu-trigger');
+        const menuOverlay = document.getElementById('menu-overlay');
+        const closeMenuBtn = document.getElementById('close-menu');
+        const menuLinks = menuOverlay.querySelectorAll('nav a');
+        const body = document.body;
+        function openMenu() { menuOverlay.classList.add('active'); body.classList.add('menu-open'); }
+        function closeMenu() { menuOverlay.classList.remove('active'); body.classList.remove('menu-open'); }
+        menuTrigger.addEventListener('click', openMenu);
+        closeMenuBtn.addEventListener('click', closeMenu);
+        menuLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                const href = link.getAttribute('href');
+                closeMenu();
+                if (href && href.startsWith('#')) {
+                     e.preventDefault();
+                     const targetElement = document.querySelector(href);
+                     if (targetElement) { setTimeout(() => { targetElement.scrollIntoView({ behavior: 'smooth' }); }, 100); }
+                }
+            });
+        });
+
+        // --- Current Year ---
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+    </script>
+
+</body>
+</html>
